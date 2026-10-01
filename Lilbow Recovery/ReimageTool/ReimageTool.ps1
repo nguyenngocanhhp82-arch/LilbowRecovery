@@ -956,7 +956,6 @@ $BtnStartBk.Add_Click({
         [Windows.MessageBox]::Show("Job ghi xong!`nMáy khởi động lại sau 5 giây.","OK","OK","Information")|Out-Null
         Start-Sleep 5; Restart-Computer -Force
 
-$BtnSelftest.Add_Click({ Start-Selftest })
     } catch { [Windows.MessageBox]::Show("Lỗi: $_","Lỗi","OK","Error")|Out-Null; Set-Status "Lỗi: $_" }
 })
 
@@ -988,6 +987,9 @@ function Test-SelftestValid {
         return $true
     } catch { return $false }
 }
+
+# Wire BtnSelftest (C2: phai nam ngoai khoi try cua Backup)
+$BtnSelftest.Add_Click({ Start-Selftest })
 
 # ── RESTORE LOGIC ─────────────────────────────────────────────────────────────
 $BtnStartRst.Add_Click({
@@ -1071,6 +1073,25 @@ $BtnStartRst.Add_Click({
 })
 
 # ── IMAGES LOGIC ──────────────────────────────────────────────────────────────
+# Test-WimBootable: mount thu chi doc, kiem tra winload.efi + SYSTEM (C3/S18)
+function Test-WimBootable([string]$wim, [int]$index = 1) {
+    $mnt = Join-Path $env:TEMP ("wimmnt_" + [guid]::NewGuid().ToString("N"))
+    New-Item -ItemType Directory -Force $mnt | Out-Null
+    try {
+        & dism.exe /Mount-Image /ImageFile:"$wim" /Index:$index /MountDir:"$mnt" /ReadOnly 2>&1 | Out-Null
+        if ($LASTEXITCODE -ne 0) { Log "Test-WimBootable: mount that bai exit=$LASTEXITCODE"; return [PSCustomObject]@{ok=$false;build=""} }
+        $hasWinload = Test-Path "$mnt\Windows\System32\winload.efi"
+        $hasSystem  = Test-Path "$mnt\Windows\System32\config\SYSTEM"
+        $build = ""
+        try { $build = (Get-Item "$mnt\Windows\System32\ntoskrnl.exe" -EA SilentlyContinue).VersionInfo.ProductVersion } catch {}
+        return [PSCustomObject]@{ ok=($hasWinload -and $hasSystem); build=$build }
+    } catch { Log "Test-WimBootable: loi $_"; return [PSCustomObject]@{ok=$false;build=""}
+    } finally {
+        & dism.exe /Unmount-Image /MountDir:"$mnt" /Discard 2>&1 | Out-Null
+        Remove-Item $mnt -Recurse -Force -EA SilentlyContinue
+    }
+}
+
 $BtnImport.Add_Click({
     $dlg = New-Object Microsoft.Win32.OpenFileDialog
     $dlg.Filter="WIM files (*.wim)|*.wim"; $dlg.Title="Chọn file ảnh WIM"
@@ -1080,16 +1101,39 @@ $BtnImport.Add_Click({
     New-Item -ItemType Directory -Force (Get-ImgDir)|Out-Null
     Set-Status "Đang sao chép..." $true; Copy-Item $src $dest -Force
     Set-Status "Đang tính SHA256..." $true
-    $hash=(Get-FileHash $dest -Algorithm SHA256).Hash; $hash|Set-Content "$dest.sha256" -Encoding UTF8
-    $GridMgImg.ItemsSource=Get-ImageRows; Log "Import: $dest"
-    Set-Status "Đã nhập: $(Split-Path $src -Leaf)"
-    [Windows.MessageBox]::Show("Nhập thành công!`nSHA256: $hash","OK","OK","Information")|Out-Null
+    $hash = (Get-FileHash $dest -Algorithm SHA256).Hash
+    $hash | Set-Content "$dest.sha256" -Encoding UTF8
+    # C3: Xac minh anh sau khi sao chep, ghi meta.json (S18)
+    Set-Status "Đang xác minh ảnh (mount thử, vài phút)..." $true
+    $result = Test-WimBootable $dest
+    $meta = @{
+        sha256        = $hash
+        created       = (Get-Date -Format "yyyy-MM-ddTHH:mm:ss")
+        source_host   = "import"
+        source_file   = (Split-Path $src -Leaf)
+        windows_build = $result.build
+        verified      = $result.ok
+    }
+    $meta | ConvertTo-Json | Set-Content "$dest.meta.json" -Encoding UTF8
+    $GridMgImg.ItemsSource = Get-ImageRows
+    Log "Import: $dest | verified=$($result.ok) | build=$($result.build)"
+    if ($result.ok) {
+        Set-Status "Đã nhập và xác minh: $(Split-Path $src -Leaf)"
+        [Windows.MessageBox]::Show("Nhập thành công! Ảnh đã xác minh.`nSHA256: $hash`nBuild: $($result.build)","Nhập ảnh OK","OK","Information")|Out-Null
+    } else {
+        Set-Status "Nhập xong — xác minh THẤT BẠI (không thể restore)"
+        [Windows.MessageBox]::Show(
+            "Ảnh đã nhập nhưng KHÔNG xác minh được.`n(Thiếu winload.efi hoặc config\SYSTEM)`n`nẢnh này KHÔNG dùng để restore được (S18).`nKiểm tra lại nguồn ảnh.",
+            "Xác minh thất bại","OK","Warning")|Out-Null
+    }
 })
 $BtnDelete.Add_Click({
     $sel=$GridMgImg.SelectedItem
     if (-not $sel) { [Windows.MessageBox]::Show("Chọn ảnh cần xóa.","","OK","Warning")|Out-Null; return }
     if ([Windows.MessageBox]::Show("Xóa '$($sel.Name)'?","Xác nhận","YesNo","Warning") -ne "Yes") { return }
-    Remove-Item $sel.FullPath -Force; Remove-Item "$($sel.FullPath).sha256" -Force -EA SilentlyContinue
+    Remove-Item $sel.FullPath -Force
+    Remove-Item "$($sel.FullPath).sha256"    -Force -EA SilentlyContinue
+    Remove-Item "$($sel.FullPath).meta.json" -Force -EA SilentlyContinue
     $GridMgImg.ItemsSource=Get-ImageRows; Log "Delete: $($sel.Name)"; Set-Status "Đã xóa: $($sel.Name)"
 })
 
