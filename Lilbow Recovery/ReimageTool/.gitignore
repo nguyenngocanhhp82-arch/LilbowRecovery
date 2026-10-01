@@ -1,0 +1,43 @@
+# .gitignore — ReimageTool
+
+# ── WinPE build output (file lớn, không commit) ──────────────────────────────
+winpe/dist/
+*.wim
+*.sdi
+*.iso
+
+# ── .NET build output ─────────────────────────────────────────────────────────
+[Bb]in/
+[Oo]bj/
+*.user
+*.suo
+.vs/
+*.cache
+packages/
+*.nupkg
+
+# ── Inno Setup output ─────────────────────────────────────────────────────────
+setup/Output/
+*.exe
+!setup/*.bat
+
+# ── Log và dữ liệu runtime (không commit lên repo) ───────────────────────────
+logs/
+*.log
+result.json
+job.json
+*.sha256
+
+# ── Driver WinPE (file nhị phân lớn — giữ cấu trúc thư mục, bỏ file) ─────────
+winpe/drivers/**
+!winpe/drivers/.gitkeep
+
+# ── OS ────────────────────────────────────────────────────────────────────────
+Thumbs.db
+Desktop.ini
+.DS_Store
+
+# ── IDE ───────────────────────────────────────────────────────────────────────
+.idea/
+*.swp
+*~

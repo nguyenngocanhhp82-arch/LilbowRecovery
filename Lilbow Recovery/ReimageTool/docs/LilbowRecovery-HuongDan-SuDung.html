@@ -1,0 +1,938 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LilbowRecovery — Hướng dẫn sử dụng chi tiết</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700;800&display=swap');
+
+  :root {
+    --blue:   #1a56db;
+    --green:  #057a55;
+    --red:    #c81e1e;
+    --orange: #b45309;
+    --gray:   #374151;
+    --light:  #f9fafb;
+    --border: #e5e7eb;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Be Vietnam Pro', 'Segoe UI', sans-serif;
+    font-size: 14px;
+    line-height: 1.75;
+    color: #1f2937;
+    background: #fff;
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 48px 40px;
+  }
+
+  /* COVER */
+  .cover {
+    background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 60%, #0f4c75 100%);
+    color: white;
+    padding: 56px 48px;
+    border-radius: 16px;
+    margin-bottom: 48px;
+    position: relative;
+    overflow: hidden;
+  }
+  .cover::before {
+    content: "🛡";
+    position: absolute;
+    right: 40px; top: 40px;
+    font-size: 80px;
+    opacity: 0.15;
+  }
+  .cover h1 { font-size: 36px; font-weight: 800; letter-spacing: -0.5px; }
+  .cover .sub { font-size: 16px; color: #93c5fd; margin-top: 8px; }
+  .cover .meta { margin-top: 28px; display: flex; gap: 24px; flex-wrap: wrap; }
+  .cover .badge {
+    background: rgba(255,255,255,0.12);
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 6px;
+    padding: 6px 14px;
+    font-size: 12px;
+    font-weight: 500;
+  }
+
+  /* TOC */
+  .toc {
+    background: #f0f9ff;
+    border-left: 4px solid #1a56db;
+    border-radius: 0 10px 10px 0;
+    padding: 24px 28px;
+    margin-bottom: 40px;
+  }
+  .toc h2 { color: #1a56db; font-size: 14px; font-weight: 700; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .toc ol { padding-left: 20px; }
+  .toc li { margin: 4px 0; }
+  .toc a { color: #1a56db; text-decoration: none; font-weight: 500; }
+  .toc a:hover { text-decoration: underline; }
+
+  /* HEADINGS */
+  h2 {
+    font-size: 22px; font-weight: 800;
+    color: #0f172a;
+    margin: 40px 0 16px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #e5e7eb;
+    display: flex; align-items: center; gap: 10px;
+  }
+  h3 {
+    font-size: 16px; font-weight: 700;
+    color: #1e3a5f;
+    margin: 28px 0 12px;
+  }
+  h4 {
+    font-size: 14px; font-weight: 600;
+    color: #374151;
+    margin: 18px 0 8px;
+  }
+
+  p { margin-bottom: 12px; }
+
+  /* STEP CARDS */
+  .steps { display: flex; flex-direction: column; gap: 0; margin: 20px 0; }
+  .step {
+    display: flex;
+    gap: 0;
+    position: relative;
+  }
+  .step:not(:last-child)::after {
+    content: "";
+    position: absolute;
+    left: 20px;
+    top: 48px;
+    width: 2px;
+    height: calc(100% - 16px);
+    background: #e5e7eb;
+  }
+  .step-num {
+    width: 42px; height: 42px;
+    background: #1a56db;
+    color: white;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 800; font-size: 16px;
+    flex-shrink: 0;
+    z-index: 1;
+    box-shadow: 0 0 0 4px #fff, 0 0 0 6px #e0eaff;
+    margin-right: 20px;
+    margin-bottom: 24px;
+  }
+  .step-body { flex: 1; padding-bottom: 24px; }
+  .step-title { font-weight: 700; font-size: 15px; color: #0f172a; margin-bottom: 8px; }
+
+  /* FILE TREE */
+  .filetree {
+    background: #0f172a;
+    color: #e2e8f0;
+    border-radius: 10px;
+    padding: 20px 24px;
+    font-family: 'Courier New', monospace;
+    font-size: 13px;
+    line-height: 2;
+    margin: 12px 0;
+    overflow-x: auto;
+  }
+  .filetree .dir   { color: #60a5fa; font-weight: 600; }
+  .filetree .file  { color: #a3e635; }
+  .filetree .note  { color: #6b7280; font-style: italic; }
+  .filetree .arrow { color: #f59e0b; }
+  .filetree .req   { color: #fb923c; font-weight: 600; }
+
+  /* CODE BLOCK */
+  .code {
+    background: #0f172a;
+    color: #7dd3fc;
+    border-radius: 8px;
+    padding: 14px 18px;
+    font-family: 'Courier New', monospace;
+    font-size: 13px;
+    margin: 10px 0;
+    overflow-x: auto;
+  }
+
+  /* CALLOUTS */
+  .note-box, .warn-box, .tip-box, .danger-box {
+    border-radius: 10px;
+    padding: 16px 20px;
+    margin: 16px 0;
+    display: flex;
+    gap: 14px;
+    align-items: flex-start;
+  }
+  .note-box   { background: #eff6ff; border-left: 4px solid #3b82f6; }
+  .warn-box   { background: #fffbeb; border-left: 4px solid #f59e0b; }
+  .tip-box    { background: #f0fdf4; border-left: 4px solid #22c55e; }
+  .danger-box { background: #fef2f2; border-left: 4px solid #ef4444; }
+  .box-icon { font-size: 20px; flex-shrink: 0; margin-top: 2px; }
+  .box-content strong { display: block; font-weight: 700; margin-bottom: 4px; }
+
+  /* TABLE */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 16px 0;
+    border-radius: 8px;
+    overflow: hidden;
+    border: 1px solid #e5e7eb;
+  }
+  th {
+    background: #1e3a5f;
+    color: white;
+    text-align: left;
+    padding: 12px 16px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  td { padding: 11px 16px; border-bottom: 1px solid #f3f4f6; font-size: 13px; }
+  tr:last-child td { border-bottom: none; }
+  tr:nth-child(even) td { background: #f9fafb; }
+
+  /* BADGES */
+  .badge-req  { background: #fef3c7; color: #92400e; border-radius: 4px; padding: 2px 8px; font-size: 11px; font-weight: 600; }
+  .badge-opt  { background: #f0fdf4; color: #166534; border-radius: 4px; padding: 2px 8px; font-size: 11px; font-weight: 600; }
+  .badge-ok   { color: #15803d; font-weight: 700; }
+  .badge-warn { color: #b45309; font-weight: 700; }
+  .badge-err  { color: #b91c1c; font-weight: 700; }
+
+  /* CHECKLIST */
+  .checklist { list-style: none; padding: 0; margin: 12px 0; }
+  .checklist li {
+    padding: 8px 12px;
+    border-radius: 6px;
+    margin: 4px 0;
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+  }
+  .checklist li .chk { font-size: 16px; flex-shrink: 0; }
+  .checklist li strong { display: block; font-size: 13px; }
+  .checklist li span  { font-size: 12px; color: #6b7280; }
+
+  /* FLOWCHART */
+  .flow {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 24px;
+    margin: 16px 0;
+    text-align: center;
+  }
+  .flow-row { display: flex; align-items: center; justify-content: center; gap: 8px; margin: 6px 0; flex-wrap: wrap; }
+  .flow-box {
+    background: #1e3a5f;
+    color: white;
+    border-radius: 8px;
+    padding: 10px 18px;
+    font-size: 13px;
+    font-weight: 600;
+    min-width: 140px;
+  }
+  .flow-box.green  { background: #057a55; }
+  .flow-box.orange { background: #b45309; }
+  .flow-box.red    { background: #c81e1e; }
+  .flow-box.gray   { background: #4b5563; }
+  .flow-arr { color: #6b7280; font-size: 20px; font-weight: 300; }
+  .flow-note { font-size: 11px; color: #6b7280; margin-top: 4px; }
+
+  /* DIVIDER */
+  hr { border: none; border-top: 1px solid #e5e7eb; margin: 32px 0; }
+
+  /* FOOTER */
+  .footer {
+    margin-top: 48px;
+    padding-top: 24px;
+    border-top: 2px solid #e5e7eb;
+    text-align: center;
+    color: #9ca3af;
+    font-size: 12px;
+  }
+
+  @media print {
+    body { padding: 20px; }
+    .cover { border-radius: 0; }
+    h2 { break-before: page; }
+    h2:first-of-type { break-before: avoid; }
+  }
+</style>
+</head>
+<body>
+
+<!-- COVER -->
+<div class="cover">
+  <h1>🛡 LilbowRecovery</h1>
+  <div class="sub">Hướng dẫn sử dụng chi tiết — Backup &amp; Restore Windows</div>
+  <div class="meta">
+    <span class="badge">📅 Phiên bản 1.0 — 2026</span>
+    <span class="badge">🖥 Windows 10 / 11 x64 UEFI/GPT</span>
+    <span class="badge">📖 Dành cho người dùng cuối</span>
+  </div>
+</div>
+
+<!-- TOC -->
+<div class="toc">
+  <h2>📋 Mục lục</h2>
+  <ol>
+    <li><a href="#s1">Giới thiệu &amp; Yêu cầu hệ thống</a></li>
+    <li><a href="#s2">Chuẩn bị — Các file cần copy vào máy</a></li>
+    <li><a href="#s3">Lần đầu sử dụng — Cài đặt WinPE &amp; Bảo mật</a></li>
+    <li><a href="#s4">Hướng dẫn Sao lưu (Backup) từng bước</a></li>
+    <li><a href="#s5">Hướng dẫn Khôi phục (Restore) từng bước</a></li>
+    <li><a href="#s6">Trường hợp đặc biệt — Windows không vào được</a></li>
+    <li><a href="#s7">Quản lý ảnh backup</a></li>
+    <li><a href="#s8">Xử lý sự cố thường gặp</a></li>
+    <li><a href="#s9">Câu hỏi thường gặp (FAQ)</a></li>
+  </ol>
+</div>
+
+
+<!-- ─────────────────────── SECTION 1 ─────────────────────── -->
+<h2 id="s1">1 · Giới thiệu &amp; Yêu cầu hệ thống</h2>
+
+<p><strong>LilbowRecovery</strong> là phần mềm sao lưu và khôi phục Windows hoàn toàn tự động. Tương tự OneKey Ghost nhưng dùng chuẩn WIM (định dạng chính thức của Microsoft), không phụ thuộc phần mềm thứ ba, chạy được trên mọi máy Windows 10/11 mà không cần cài đặt thêm gì.</p>
+
+<table>
+  <tr><th>Yêu cầu</th><th>Chi tiết</th><th>Ghi chú</th></tr>
+  <tr><td><strong>Hệ điều hành</strong></td><td>Windows 10 / 11 x64</td><td>UEFI/GPT (không hỗ trợ Legacy BIOS/MBR)</td></tr>
+  <tr><td><strong>Ổ lưu ảnh</strong></td><td>Ổ thứ 2 (D:, E:, ...)</td><td>NTFS, <strong>khác</strong> ổ Windows (C:)</td></tr>
+  <tr><td><strong>Dung lượng trống</strong></td><td>Tối thiểu bằng dung lượng đã dùng của C:</td><td>Ví dụ: C: dùng 40 GB → cần ≥ 28 GB trống</td></tr>
+  <tr><td><strong>BitLocker</strong></td><td>Phải tắt hoặc tạm ngừng</td><td>App hỗ trợ tạm ngừng tự động</td></tr>
+  <tr><td><strong>Nguồn điện</strong></td><td>Khuyến nghị cắm điện</td><td>Pin &lt; 30% sẽ bị cảnh báo</td></tr>
+  <tr><td><strong>PowerShell</strong></td><td>5.1 (có sẵn trong Windows)</td><td>Không cần cài thêm</td></tr>
+</table>
+
+<div class="warn-box">
+  <div class="box-icon">⚠️</div>
+  <div class="box-content">
+    <strong>Lưu ý quan trọng</strong>
+    LilbowRecovery KHÔNG hỗ trợ máy Legacy BIOS/MBR (máy cũ trước 2012). Để kiểm tra: vào <code>msinfo32.exe</code> → xem mục <em>BIOS Mode</em>, phải là <strong>UEFI</strong>.
+  </div>
+</div>
+
+
+<!-- ─────────────────────── SECTION 2 ─────────────────────── -->
+<h2 id="s2">2 · Chuẩn bị — Các file cần copy vào máy</h2>
+
+<h3>2.1 Gói file LilbowRecovery</h3>
+
+<p>Bạn nhận được từ người quản trị một USB hoặc thư mục chia sẻ chứa đúng <strong>5 file</strong> sau:</p>
+
+<div class="filetree">
+<span class="dir">📁 LilbowRecovery_Package\</span><br>
+├── <span class="file req">LilbowRecovery.bat</span>   <span class="arrow">←</span> <span class="note">FILE LAUNCHER — double-click để chạy</span><br>
+├── <span class="file req">ReimageTool.ps1</span>      <span class="arrow">←</span> <span class="note">Ứng dụng chính (WPF GUI)</span><br>
+├── <span class="file req">engine.ps1</span>           <span class="arrow">←</span> <span class="note">Script chạy trong WinPE (tự động copy khi cài)</span><br>
+├── <span class="file req">boot.wim</span>             <span class="arrow">←</span> <span class="note">Môi trường WinPE (~500 MB)</span><br>
+└── <span class="file req">boot.sdi</span>             <span class="arrow">←</span> <span class="note">File boot WinPE (&lt; 1 MB)</span>
+</div>
+
+<div class="danger-box">
+  <div class="box-icon">🚫</div>
+  <div class="box-content">
+    <strong>Bắt buộc: phải có đủ cả 5 file trong cùng một thư mục</strong>
+    Nếu thiếu <code>boot.wim</code> hoặc <code>boot.sdi</code>, phần mềm sẽ báo lỗi khi cài đặt WinPE.
+  </div>
+</div>
+
+<h3>2.2 Copy file vào đâu?</h3>
+
+<p>Bạn có thể để 5 file này ở <strong>bất kỳ đâu</strong> trên máy (Desktop, USB, D:\...). Phần mềm sẽ tự tìm đúng vị trí. Ví dụ:</p>
+
+<div class="filetree">
+<span class="note"># Để trên Desktop:</span><br>
+C:\Users\<span class="dir">TenNguoiDung</span>\Desktop\<span class="dir">LilbowRecovery\</span><br>
+<br>
+<span class="note"># Hoặc thẳng trên D:\ cũng được:</span><br>
+D:\<span class="dir">LilbowRecovery_Setup\</span>
+</div>
+
+<div class="tip-box">
+  <div class="box-icon">💡</div>
+  <div class="box-content">
+    <strong>Gợi ý tốt nhất</strong>
+    Copy vào USB, cắm vào máy cần backup, double-click chạy thẳng từ USB. Không cần copy vào ổ cứng máy.
+  </div>
+</div>
+
+<h3>2.3 Kiểm tra trước khi chạy</h3>
+
+<ul class="checklist">
+  <li><span class="chk">✅</span><div><strong>Máy dùng UEFI (không phải Legacy BIOS)</strong><span>msinfo32 → BIOS Mode = UEFI</span></div></li>
+  <li><span class="chk">✅</span><div><strong>Có ổ thứ 2 (D:, E:, ...) định dạng NTFS</strong><span>Dùng để lưu ảnh backup. Ổ USB cũng được nếu đủ dung lượng.</span></div></li>
+  <li><span class="chk">✅</span><div><strong>Ổ lưu ảnh có đủ chỗ trống</strong><span>Cần ít nhất bằng 70% dung lượng đang dùng của C:</span></div></li>
+  <li><span class="chk">✅</span><div><strong>Đang đăng nhập bằng tài khoản Administrator</strong><span>Phần mềm tự yêu cầu nếu thiếu quyền</span></div></li>
+  <li><span class="chk">✅</span><div><strong>Máy tính xách tay đang cắm điện</strong><span>Hoặc pin > 50%</span></div></li>
+</ul>
+
+
+<!-- ─────────────────────── SECTION 3 ─────────────────────── -->
+<h2 id="s3">3 · Lần đầu sử dụng — Cài đặt WinPE &amp; Bảo mật</h2>
+
+<div class="note-box">
+  <div class="box-icon">ℹ️</div>
+  <div class="box-content">
+    <strong>Chỉ cần làm một lần duy nhất</strong>
+    Các bước trong mục 3 chỉ cần thực hiện lần đầu tiên. Những lần backup/restore sau không cần làm lại.
+  </div>
+</div>
+
+<div class="steps">
+  <div class="step">
+    <div class="step-num">1</div>
+    <div class="step-body">
+      <div class="step-title">Chạy phần mềm với quyền Administrator</div>
+      <p>Chuột phải vào <strong>LilbowRecovery.bat</strong> → chọn <em>"Run as administrator"</em>.</p>
+      <p>Phần mềm tự động yêu cầu quyền admin. Nhấn <strong>Yes</strong> khi Windows hỏi UAC.</p>
+      <div class="tip-box" style="margin-top:8px">
+        <div class="box-icon">💡</div>
+        <div class="box-content">Nếu double-click bình thường, phần mềm cũng tự leo quyền — nhưng tốt nhất vẫn nên chuột phải → Run as administrator.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-num">2</div>
+    <div class="step-body">
+      <div class="step-title">Tắt bảo mật — Trang "🔐 Bảo mật"</div>
+      <p>Trong cửa sổ LilbowRecovery, nhấn <strong>"🔐 Bảo mật"</strong> ở menu bên trái.</p>
+      <p>Nhấn nút <strong>"✨ Tắt tất cả ngay"</strong> → xác nhận Yes.</p>
+      <p>Phần mềm tự động:</p>
+      <table style="margin-top:8px">
+        <tr><th>Hành động</th><th>Kết quả</th></tr>
+        <tr><td>Tạm ngừng BitLocker C:</td><td><span class="badge-ok">✔</span> Tắt trong 1 lần reboot tiếp</td></tr>
+        <tr><td>Tạm ngừng BitLocker ổ lưu ảnh</td><td><span class="badge-ok">✔</span> Tắt trong 1 lần reboot tiếp</td></tr>
+        <tr><td>Tắt Fast Startup</td><td><span class="badge-ok">✔</span> NTFS không bị lock khi WinPE boot</td></tr>
+        <tr><td>Đặt PowerShell ExecutionPolicy</td><td><span class="badge-ok">✔</span> Script chạy không bị chặn</td></tr>
+        <tr><td>Thêm Defender Exclusion</td><td><span class="badge-ok">✔</span> Defender không xóa engine.ps1</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-num">3</div>
+    <div class="step-body">
+      <div class="step-title">Chọn ổ lưu ảnh — Trang "⚙ Cài đặt &amp; WinPE"</div>
+      <p>Nhấn <strong>"⚙ Cài đặt &amp; WinPE"</strong> ở menu bên trái.</p>
+      <p>Trong mục <em>Ổ lưu ảnh</em>, chọn ổ thứ 2 (ví dụ: <strong>D</strong>) từ danh sách xổ xuống.</p>
+      <p>Nhấn <strong>"Áp dụng"</strong>.</p>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-num">4</div>
+    <div class="step-body">
+      <div class="step-title">Cài đặt WinPE — Trang "⚙ Cài đặt &amp; WinPE"</div>
+      <p>Nhấn nút <strong>"🔧 Cài đặt / Cập nhật WinPE"</strong>.</p>
+      <p>Phần mềm tự động:</p>
+      <ul style="padding-left:20px; margin:8px 0">
+        <li>Tạo thư mục <code>D:\LilbowRecovery\</code></li>
+        <li>Copy <code>boot.wim</code> và <code>boot.sdi</code> vào đúng vị trí</li>
+        <li>Tạo mục boot trong BCD (Windows Boot Manager)</li>
+      </ul>
+      <p>Khi xong, hiện thông báo: <span class="badge-ok">✔ Cài đặt WinPE hoàn tất!</span></p>
+      <div class="warn-box" style="margin-top:8px">
+        <div class="box-icon">⚠️</div>
+        <div class="box-content">Quá trình này mất 2–5 phút (copy boot.wim ~500 MB). Không tắt máy trong lúc chờ.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-num">5</div>
+    <div class="step-body">
+      <div class="step-title">Kiểm tra Dashboard</div>
+      <p>Nhấn <strong>"📊 Dashboard"</strong> ở menu bên trái.</p>
+      <p>Tất cả 4 thẻ trạng thái phải hiện màu <span class="badge-ok">xanh lá</span>:</p>
+      <table>
+        <tr><th>Thẻ</th><th>Trạng thái mong muốn</th></tr>
+        <tr><td>WinPE</td><td><span class="badge-ok">✔ Đã cài đặt</span></td></tr>
+        <tr><td>Ổ lưu ảnh</td><td><span class="badge-ok">D: — XX GB trống</span></td></tr>
+        <tr><td>Bảo mật</td><td><span class="badge-ok">✔ Tất cả ổn</span></td></tr>
+        <tr><td>Nguồn điện</td><td><span class="badge-ok">✔ Cắm điện (AC)</span></td></tr>
+      </table>
+      <p style="margin-top:8px"><strong>Nút BACKUP và RESTORE sáng lên</strong> → máy sẵn sàng sử dụng! 🎉</p>
+    </div>
+  </div>
+</div>
+
+
+<!-- ─────────────────────── SECTION 4 ─────────────────────── -->
+<h2 id="s4">4 · Hướng dẫn Sao lưu (Backup) từng bước</h2>
+
+<div class="flow">
+  <div class="flow-row">
+    <div class="flow-box">Mở app</div>
+    <div class="flow-arr">→</div>
+    <div class="flow-box">Trang Bảo mật</div>
+    <div class="flow-arr">→</div>
+    <div class="flow-box">Trang Sao lưu</div>
+  </div>
+  <div class="flow-row">
+    <div class="flow-arr">↓</div>
+  </div>
+  <div class="flow-row">
+    <div class="flow-box">Chọn phân vùng</div>
+    <div class="flow-arr">→</div>
+    <div class="flow-box">Đặt tên / Mức nén</div>
+    <div class="flow-arr">→</div>
+    <div class="flow-box green">Bắt đầu → Reboot</div>
+  </div>
+  <div class="flow-row">
+    <div class="flow-arr">↓</div>
+  </div>
+  <div class="flow-row">
+    <div class="flow-box gray">WinPE tự backup</div>
+    <div class="flow-arr">→</div>
+    <div class="flow-box green">Về Windows</div>
+    <div class="flow-arr">→</div>
+    <div class="flow-box green">Hoàn tất ✔</div>
+  </div>
+  <div class="flow-note">Toàn bộ quá trình: 10–40 phút tùy dung lượng</div>
+</div>
+
+<div class="steps">
+  <div class="step">
+    <div class="step-num">1</div>
+    <div class="step-body">
+      <div class="step-title">Mở LilbowRecovery</div>
+      <p>Double-click <strong>LilbowRecovery.bat</strong> → nhấn Yes khi UAC hỏi.</p>
+      <p>Màn hình Dashboard hiện lên, kiểm tra nút <strong>"☁ SAO LƯU"</strong> đã sáng (không bị mờ).</p>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-num">2</div>
+    <div class="step-body">
+      <div class="step-title">Vào trang Bảo mật (nếu cần)</div>
+      <p>Nhấn <strong>"🔐 Bảo mật"</strong>. Nếu có mục nào <span class="badge-err">đỏ hoặc vàng</span>, nhấn <strong>"✨ Tắt tất cả ngay"</strong> rồi đợi xử lý.</p>
+      <p>Mục BitLocker hiện <span class="badge-warn">⚠ Đang bật</span>? → Nhấn "Tắt / Sửa" → phần mềm tự tạm ngừng BitLocker.</p>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-num">3</div>
+    <div class="step-body">
+      <div class="step-title">Vào trang Sao lưu</div>
+      <p>Nhấn <strong>"☁ Sao lưu (Backup)"</strong> ở menu bên trái.</p>
+      <p>Danh sách phân vùng hiện ra, chỉ hiện các phân vùng <strong>có chứa Windows</strong> (có ký hiệu ✅).</p>
+      <table style="margin-top:8px">
+        <tr><th>Ổ</th><th>Nhãn</th><th>Kích thước</th><th>Trống</th><th>Ghi chú</th></tr>
+        <tr><td><strong>C:</strong></td><td>WINDOWS</td><td>120 GB</td><td>45 GB</td><td><span class="badge-ok">✅ Có Windows</span></td></tr>
+        <tr><td style="color:#9ca3af">(EFI)</td><td style="color:#9ca3af">—</td><td style="color:#9ca3af">100 MB</td><td style="color:#9ca3af">—</td><td style="color:#9ca3af">EFI — không chọn được</td></tr>
+      </table>
+      <p style="margin-top:8px"><strong>Nhấn vào dòng C:</strong> để chọn phân vùng nguồn.</p>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-num">4</div>
+    <div class="step-body">
+      <div class="step-title">Đặt tên file ảnh và chọn mức nén</div>
+      <p><strong>Tên file ảnh:</strong> Phần mềm tự điền tên mặc định theo dạng:<br>
+      <code>TENMAY_yyyyMMdd-HHmm.wim</code> (ví dụ: <code>PC-KETOAN01_20261101-0930.wim</code>)</p>
+      <p>Bạn có thể đổi tên khác cho dễ nhớ, ví dụ: <code>TruocCaiPhanMem.wim</code></p>
+      <p><strong>Mức nén — ví dụ Windows 40 GB dữ liệu:</strong></p>
+      <table>
+        <tr><th>Chọn</th><th>Thuật toán</th><th>File ảnh ≈</th><th>Thời gian backup</th><th>Khuyến nghị</th></tr>
+        <tr><td><strong>Nhanh</strong></td><td>LZX Fast</td><td>~14–16 GB</td><td>~15–25 phút</td><td><span class="badge-ok">✔ Dùng hằng ngày</span></td></tr>
+        <tr><td><strong>Tối đa (LZX)</strong></td><td>LZX Maximum</td><td>~11–13 GB</td><td>~30–50 phút</td><td>Khi ổ lưu gần đầy</td></tr>
+        <tr><td><strong>Recovery (LZMS)</strong></td><td>LZMS</td><td>~9–11 GB</td><td>~60–120 phút</td><td>Lưu trữ dài hạn, ổ rất ít trống</td></tr>
+      </table>
+      <div class="note-box" style="margin-top:8px">
+        <div class="box-icon">ℹ️</div>
+        <div class="box-content">
+          <strong>Tất cả 3 mức đều nén đáng kể</strong>
+          Windows 40 GB thực tế → file ảnh chỉ còn 9–16 GB. Mức "Nhanh" đã tiết kiệm ~60% dung lượng và đủ dùng cho hầu hết trường hợp.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-num">5</div>
+    <div class="step-body">
+      <div class="step-title">Bắt đầu sao lưu</div>
+      <p>Nhấn nút <strong>"▶ BẮT ĐẦU SAO LƯU"</strong>.</p>
+      <p>Hộp thoại xác nhận hiện ra, kiểm tra thông tin rồi nhấn <strong>OK</strong>.</p>
+      <div class="warn-box" style="margin-top:8px">
+        <div class="box-icon">⚠️</div>
+        <div class="box-content">
+          <strong>Máy sẽ tự khởi động lại sau 5 giây!</strong>
+          Lưu và đóng tất cả tài liệu đang mở trước khi nhấn OK.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-num">6</div>
+    <div class="step-body">
+      <div class="step-title">Đợi WinPE tự sao lưu (không cần làm gì)</div>
+      <p>Máy khởi động vào môi trường WinPE (màn hình tối với chữ trắng). <strong>Không tắt máy, không nhấn phím nào.</strong></p>
+      <p>Màn hình hiện tiến trình:</p>
+      <div class="code">
+[1/5] Doc job.json...<br>
+[2/5] Kiem tra phan vung nguon C: (GUID: {...})<br>
+[3/5] Bat dau DISM /Capture-Image...<br>
+      0% 10% 25% 50% 75% 100%<br>
+[4/5] Tinh SHA256 kiem tra toan ven...<br>
+[5/5] Hoan tat! Ghi result.json...<br>
+Khoi dong lai sau 10 giay...
+      </div>
+      <p style="margin-top:8px">Thời gian tùy dung lượng:</p>
+      <table>
+        <tr><th>Dữ liệu C:</th><th>Ổ cứng HDD</th><th>Ổ cứng SSD</th></tr>
+        <tr><td>20 GB</td><td>~20 phút</td><td>~8 phút</td></tr>
+        <tr><td>40 GB</td><td>~35 phút</td><td>~15 phút</td></tr>
+        <tr><td>80 GB</td><td>~60 phút</td><td>~25 phút</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-num">7</div>
+    <div class="step-body">
+      <div class="step-title">Về Windows — Kiểm tra kết quả</div>
+      <p>Máy tự khởi động lại về Windows. Mở lại <strong>LilbowRecovery.bat</strong>.</p>
+      <p>Dashboard hiện thông báo:</p>
+      <div class="tip-box" style="margin-top:8px">
+        <div class="box-icon">✅</div>
+        <div class="box-content"><strong>BACKUP — XONG: Đã sao lưu thành công. File: PC-KETOAN01_20261101-0930.wim</strong></div>
+      </div>
+      <p style="margin-top:8px">File ảnh được lưu tại: <code>D:\LilbowRecovery\images\PC-KETOAN01_20261101-0930.wim</code></p>
+    </div>
+  </div>
+</div>
+
+
+<!-- ─────────────────────── SECTION 5 ─────────────────────── -->
+<h2 id="s5">5 · Hướng dẫn Khôi phục (Restore) từng bước</h2>
+
+<div class="danger-box">
+  <div class="box-icon">🚨</div>
+  <div class="box-content">
+    <strong>Cảnh báo: Thao tác này XÓA toàn bộ dữ liệu trên phân vùng đích</strong>
+    Phân vùng C: sẽ bị format và cài lại từ ảnh backup. Dữ liệu trên D:, E:, ... KHÔNG bị ảnh hưởng. Ảnh backup vẫn còn sau khi restore xong.
+  </div>
+</div>
+
+<div class="flow">
+  <div class="flow-row">
+    <div class="flow-box">Mở app</div>
+    <div class="flow-arr">→</div>
+    <div class="flow-box">Trang Bảo mật → Tắt</div>
+    <div class="flow-arr">→</div>
+    <div class="flow-box">Trang Khôi phục</div>
+  </div>
+  <div class="flow-row"><div class="flow-arr">↓</div></div>
+  <div class="flow-row">
+    <div class="flow-box">Chọn ảnh</div>
+    <div class="flow-arr">→</div>
+    <div class="flow-box">App kiểm tra SHA256</div>
+    <div class="flow-arr">→</div>
+    <div class="flow-box">Chọn phân vùng đích</div>
+  </div>
+  <div class="flow-row"><div class="flow-arr">↓</div></div>
+  <div class="flow-row">
+    <div class="flow-box red">Xác nhận "OK"</div>
+    <div class="flow-arr">→</div>
+    <div class="flow-box gray">WinPE tự restore</div>
+    <div class="flow-arr">→</div>
+    <div class="flow-box green">Về Windows ✔</div>
+  </div>
+  <div class="flow-note">Toàn bộ quá trình: 15–40 phút tùy dung lượng</div>
+</div>
+
+<div class="steps">
+  <div class="step">
+    <div class="step-num">1</div>
+    <div class="step-body">
+      <div class="step-title">Mở LilbowRecovery &amp; Tắt bảo mật</div>
+      <p>Double-click <strong>LilbowRecovery.bat</strong> → nhấn Yes.</p>
+      <p>Vào <strong>"🔐 Bảo mật"</strong> → nhấn <strong>"✨ Tắt tất cả ngay"</strong>.</p>
+      <div class="warn-box" style="margin-top:8px">
+        <div class="box-icon">⚠️</div>
+        <div class="box-content">Bước này <strong>bắt buộc</strong> nếu BitLocker đang bật. WinPE không thể truy cập ổ D: để đọc ảnh backup nếu BitLocker chưa tạm ngừng.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-num">2</div>
+    <div class="step-body">
+      <div class="step-title">Vào trang Khôi phục</div>
+      <p>Nhấn <strong>"🔄 Khôi phục (Restore)"</strong> ở menu bên trái.</p>
+      <p>Trang hiện 2 bảng: <strong>danh sách ảnh</strong> (bên trên) và <strong>danh sách phân vùng</strong> (bên dưới).</p>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-num">3</div>
+    <div class="step-body">
+      <div class="step-title">Chọn ảnh backup cần dùng</div>
+      <p>Danh sách ảnh hiện theo thứ tự mới nhất trước:</p>
+      <table>
+        <tr><th>STT</th><th>Tên file</th><th>Kích thước</th><th>Ngày tạo</th><th>Hash</th></tr>
+        <tr><td>[1]</td><td>PC-KT01_20261201-1400.wim</td><td>12.3 GB</td><td>2026-12-01 14:00</td><td><span class="badge-ok">✔ OK</span></td></tr>
+        <tr><td>[2]</td><td>PC-KT01_20261101-0930.wim</td><td>11.8 GB</td><td>2026-11-01 09:30</td><td><span class="badge-ok">✔ OK</span></td></tr>
+      </table>
+      <p style="margin-top:8px">Nhấn vào dòng ảnh muốn dùng (thường chọn dòng đầu tiên — mới nhất).</p>
+      <div class="note-box" style="margin-top:8px">
+        <div class="box-icon">ℹ️</div>
+        <div class="box-content">Ảnh nào có cột Hash = <span class="badge-err">✘ Thiếu</span> sẽ bị từ chối — app sẽ không cho restore để đảm bảo an toàn.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-num">4</div>
+    <div class="step-body">
+      <div class="step-title">Chọn phân vùng đích</div>
+      <p>Trong bảng <em>Phân vùng đích</em>, chỉ hiện các phân vùng có Windows:</p>
+      <table>
+        <tr><th>Ổ</th><th>Nhãn</th><th>Kích thước</th><th>Ghi chú</th></tr>
+        <tr><td><strong>C:</strong></td><td>WINDOWS</td><td>120 GB</td><td><span class="badge-ok">✅ Có Windows</span></td></tr>
+      </table>
+      <p style="margin-top:8px">Nhấn vào dòng <strong>C:</strong>.</p>
+      <div class="danger-box" style="margin-top:8px">
+        <div class="box-icon">🔴</div>
+        <div class="box-content"><strong>Toàn bộ nội dung C: sẽ bị xóa!</strong> Hãy chắc chắn các file quan trọng đã được lưu ở D: hoặc USB trước khi tiếp tục.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-num">5</div>
+    <div class="step-body">
+      <div class="step-title">App tự kiểm tra SHA256</div>
+      <p>Sau khi nhấn <strong>"🔄 BẮT ĐẦU KHÔI PHỤC"</strong>, app tự động kiểm tra tính toàn vẹn của file ảnh (mất 1–3 phút).</p>
+      <table>
+        <tr><th>Kết quả</th><th>Ý nghĩa</th><th>Xử lý</th></tr>
+        <tr><td><span class="badge-ok">SHA256 OK</span></td><td>File ảnh nguyên vẹn, dùng được</td><td>Tiếp tục bình thường</td></tr>
+        <tr><td><span class="badge-err">SHA256 lỗi</span></td><td>File ảnh bị hỏng / bị sửa</td><td>Chọn ảnh khác, không dùng ảnh này</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-num">6</div>
+    <div class="step-body">
+      <div class="step-title">Xác nhận lần cuối</div>
+      <p>Hộp thoại cảnh báo đỏ hiện ra, tóm tắt thông tin:</p>
+      <div style="background:#fef2f2; border:2px solid #ef4444; border-radius:8px; padding:16px; margin:8px 0; font-size:13px">
+        ⚠ CẢNH BÁO — THAO TÁC KHÔNG THỂ HOÀN TÁC!<br><br>
+        SẼ FORMAT:<br>
+        &nbsp;&nbsp;Ổ đĩa: C:   Nhãn: WINDOWS   Disk 0 / Part 3<br>
+        &nbsp;&nbsp;Kích thước: 120 GB<br><br>
+        Ảnh dùng: PC-KT01_20261201-1400.wim<br>
+        Ổ D: KHÔNG bị ảnh hưởng.
+      </div>
+      <p>Nhấn <strong>OK</strong> để xác nhận. Máy sẽ khởi động lại sau 5 giây.</p>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-num">7</div>
+    <div class="step-body">
+      <div class="step-title">Đợi WinPE tự khôi phục (không cần làm gì)</div>
+      <p>Máy khởi động vào WinPE và tự chạy:</p>
+      <div class="code">
+[1/6] Doc job.json...<br>
+[2/6] Tim phan vung dich bang GUID...<br>
+[3/6] Format phan vung C: (NTFS)...<br>
+[4/6] DISM /Apply-Image (bung anh)...<br>
+      0% 10% 25% 50% 75% 100%<br>
+[5/6] Phuc hoi BCD (bcdboot)...<br>
+[6/6] Hoan tat! Ghi result.json...<br>
+Khoi dong lai sau 10 giay...
+      </div>
+      <p style="margin-top:8px"><strong>Không tắt máy, không nhấn gì trong lúc này!</strong></p>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-num">8</div>
+    <div class="step-body">
+      <div class="step-title">Về Windows — Hoàn tất</div>
+      <p>Máy tự boot về Windows (đã được khôi phục về thời điểm backup).</p>
+      <p>Mở lại <strong>LilbowRecovery.bat</strong>, Dashboard hiện:</p>
+      <div class="tip-box">
+        <div class="box-icon">✅</div>
+        <div class="box-content"><strong>RESTORE — XONG: Đã khôi phục thành công.</strong></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ─────────────────────── SECTION 6 ─────────────────────── -->
+<h2 id="s6">6 · Trường hợp đặc biệt — Windows không vào được nữa</h2>
+
+<p>Nếu máy bị hỏng hoàn toàn (màn hình xanh, không boot), nhưng trước đó đã <strong>đặt lệnh restore trong app</strong>, bạn có thể boot thẳng vào WinPE từ Boot Menu.</p>
+
+<div class="steps">
+  <div class="step">
+    <div class="step-num">1</div>
+    <div class="step-body">
+      <div class="step-title">Bật máy và vào Boot Menu</div>
+      <p>Khi thấy logo hãng máy, nhấn liên tục phím boot menu:</p>
+      <table>
+        <tr><th>Hãng máy</th><th>Phím</th></tr>
+        <tr><td>Dell</td><td><kbd>F12</kbd></td></tr>
+        <tr><td>HP</td><td><kbd>F9</kbd> hoặc <kbd>Esc</kbd></td></tr>
+        <tr><td>Lenovo</td><td><kbd>F12</kbd> hoặc nút Novo</td></tr>
+        <tr><td>Asus</td><td><kbd>F8</kbd> hoặc <kbd>Esc</kbd></td></tr>
+        <tr><td>Acer</td><td><kbd>F12</kbd></td></tr>
+        <tr><td>MSI</td><td><kbd>F11</kbd></td></tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-num">2</div>
+    <div class="step-body">
+      <div class="step-title">Chọn "LilbowRecovery WinPE"</div>
+      <p>Trong danh sách boot, chọn dòng: <strong>LilbowRecovery WinPE</strong></p>
+      <p>WinPE sẽ tự khởi động và đọc <code>job.json</code> đã ghi trước đó để restore.</p>
+    </div>
+  </div>
+
+  <div class="step">
+    <div class="step-num">3</div>
+    <div class="step-body">
+      <div class="step-title">WinPE tự động restore — không cần làm gì</div>
+      <p>Quá trình giống như bước 7 ở mục 5 — đợi máy tự hoàn tất và boot về Windows.</p>
+    </div>
+  </div>
+</div>
+
+<div class="warn-box">
+  <div class="box-icon">⚠️</div>
+  <div class="box-content">
+    <strong>Điều kiện tiên quyết cho tình huống này</strong>
+    Phải đã chạy app và ghi lệnh restore (<code>job.json</code>) <strong>trước khi</strong> máy bị hỏng hoàn toàn. Nếu chưa kịp ghi, cần công cụ bổ sung để nhập tay — liên hệ người quản trị.
+  </div>
+</div>
+
+
+<!-- ─────────────────────── SECTION 7 ─────────────────────── -->
+<h2 id="s7">7 · Quản lý ảnh backup</h2>
+
+<p>Nhấn <strong>"🗃 Quản lý ảnh"</strong> ở menu bên trái để xem, xóa, hoặc nhập ảnh.</p>
+
+<table>
+  <tr><th>Chức năng</th><th>Cách thực hiện</th><th>Lưu ý</th></tr>
+  <tr>
+    <td>Xem danh sách</td>
+    <td>Tự động hiện khi vào trang</td>
+    <td>Sắp xếp theo ngày tạo mới nhất</td>
+  </tr>
+  <tr>
+    <td>Xóa ảnh</td>
+    <td>Chọn ảnh → nhấn "🗑 Xóa"</td>
+    <td>Xóa cả file .sha256 kèm theo. Không thể hoàn tác!</td>
+  </tr>
+  <tr>
+    <td>Nhập ảnh từ USB/mạng</td>
+    <td>Nhấn "+ Nhập ảnh" → chọn file .wim</td>
+    <td>Tự tính SHA256 sau khi copy. Mất vài phút.</td>
+  </tr>
+</table>
+
+<h4>Chiến lược lưu ảnh khuyến nghị:</h4>
+<ul class="checklist">
+  <li><span class="chk">💾</span><div><strong>Giữ tối đa 3 ảnh gần nhất</strong><span>Xóa ảnh cũ nhất khi tạo ảnh mới để tiết kiệm ổ.</span></div></li>
+  <li><span class="chk">📅</span><div><strong>Backup trước mỗi lần cài phần mềm lớn</strong><span>Ví dụ: trước khi cài AutoCAD, phần mềm kế toán, Windows Update lớn.</span></div></li>
+  <li><span class="chk">🗓</span><div><strong>Backup định kỳ hàng tháng</strong><span>Ảnh mỗi tháng 1 lần là đủ cho môi trường văn phòng ổn định.</span></div></li>
+</ul>
+
+
+<!-- ─────────────────────── SECTION 8 ─────────────────────── -->
+<h2 id="s8">8 · Xử lý sự cố thường gặp</h2>
+
+<table>
+  <tr><th>Triệu chứng</th><th>Nguyên nhân</th><th>Cách xử lý</th></tr>
+  <tr>
+    <td>Nút BACKUP/RESTORE bị mờ</td>
+    <td>WinPE chưa cài</td>
+    <td>⚙ Cài đặt → "🔧 Cài đặt WinPE"</td>
+  </tr>
+  <tr>
+    <td>App báo "Thiếu boot.wim"</td>
+    <td>boot.wim không có cạnh file bat</td>
+    <td>Đặt boot.wim và boot.sdi cùng thư mục với LilbowRecovery.bat</td>
+  </tr>
+  <tr>
+    <td>WinPE boot nhưng màn hình đen</td>
+    <td>Secure Boot chặn WinPE</td>
+    <td>Vào BIOS/UEFI (F2/Del) → tắt Secure Boot</td>
+  </tr>
+  <tr>
+    <td>WinPE báo "Khong the mo o D:"</td>
+    <td>BitLocker chưa tắt</td>
+    <td>Boot lại Windows → Bảo mật → Tắt BitLocker → Thử lại</td>
+  </tr>
+  <tr>
+    <td>Backup chạy rất lâu (&gt;2 tiếng)</td>
+    <td>Ổ HDD cũ hoặc dữ liệu nhiều</td>
+    <td>Bình thường — đừng tắt máy. Nếu muốn nhanh hơn: dùng SSD.</td>
+  </tr>
+  <tr>
+    <td>Sau restore máy không boot được</td>
+    <td>BCD chưa được khôi phục</td>
+    <td>Dùng Windows ISO boot → chọn Repair → Startup Repair</td>
+  </tr>
+  <tr>
+    <td>SHA256 không khớp</td>
+    <td>File ảnh bị hỏng trong quá trình copy/lưu</td>
+    <td>Xóa ảnh đó, dùng ảnh backup khác</td>
+  </tr>
+  <tr>
+    <td>Script bị Windows Defender xóa</td>
+    <td>Defender chưa có exclusion</td>
+    <td>Bảo mật → Thêm Defender Exclusion → Tải lại engine.ps1 từ USB</td>
+  </tr>
+</table>
+
+
+<!-- ─────────────────────── SECTION 9 ─────────────────────── -->
+<h2 id="s9">9 · Câu hỏi thường gặp (FAQ)</h2>
+
+<h4>❓ Trong lúc WinPE đang backup, điện bị cúp thì sao?</h4>
+<p>Ảnh đang tạo dở sẽ chưa hoàn tất. Khởi động lại máy vào Windows bình thường (WinPE chỉ đặt bootsequence 1 lần, sẽ tự bỏ qua). Ảnh dở sẽ được xóa và bạn cần backup lại.</p>
+
+<h4>❓ Có thể backup 2 máy khác nhau vào cùng 1 ổ không?</h4>
+<p>Có, ảnh được lưu với tên kèm tên máy (COMPUTERNAME) nên không bị trùng. Tuy nhiên, cần đảm bảo mỗi máy có <code>D:\LilbowRecovery\bootguid.txt</code> riêng (mỗi máy cài WinPE một lần).</p>
+
+<h4>❓ Máy đích restore có cần cùng cấu hình phần cứng không?</h4>
+<p>Tốt nhất là phần cứng tương đương (cùng model hoặc tương tự). Restore sang máy khác CPU/mainboard có thể cần kích hoạt lại Windows.</p>
+
+<h4>❓ Ảnh WIM có thể mở trên máy khác để lấy file không?</h4>
+<p>Có. Dùng lệnh: <code>dism /Mount-Image /ImageFile:C:\anh.wim /Index:1 /MountDir:D:\mount /ReadOnly</code> rồi copy file bình thường. Sau đó unmount.</p>
+
+<h4>❓ LilbowRecovery có tương thích với máy dùng RAID không?</h4>
+<p>Cơ bản là có nếu WinPE nhận đúng driver RAID. Tuy nhiên cần kiểm tra thêm trên môi trường cụ thể.</p>
+
+<h4>❓ Có thể lên lịch backup tự động hàng tuần không?</h4>
+<p>Phiên bản hiện tại chưa hỗ trợ. Tính năng này có thể bổ sung trong phiên bản tương lai.</p>
+
+<hr>
+
+<div class="footer">
+  <p><strong>LilbowRecovery v1.0</strong> — Tài liệu hướng dẫn sử dụng</p>
+  <p>Định dạng ảnh: WIM (Windows Imaging Format) — Chuẩn Microsoft chính thức</p>
+  <p>© 2026 Lilbow — Chỉ sử dụng nội bộ</p>
+</div>
+
+</body>
+</html>
