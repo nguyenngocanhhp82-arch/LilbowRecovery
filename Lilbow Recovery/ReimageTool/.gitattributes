@@ -1,0 +1,29 @@
+# LilbowRecovery .gitattributes
+# Quy tac dong nhat:
+#   .ps1 -> CRLF (PowerShell tren Windows doc tot nhat voi CRLF)
+#   .cmd/.bat -> CRLF (bat/cmd PHAI co CRLF de goto/call lam viec)
+#   .sh -> LF (Unix shell can LF)
+#   .json/.md/.html -> CRLF (doc tren Windows chu yeu)
+# engine.ps1 phai la ASCII thuan (xem tools/Test-Scripts.ps1)
+# ReimageTool.ps1 phai la UTF-8 co BOM
+
+*.ps1       text eol=crlf
+*.cmd       text eol=crlf
+*.bat       text eol=crlf
+*.sh        text eol=lf
+*.json      text eol=crlf
+*.md        text eol=crlf
+*.html      text eol=crlf
+*.txt       text eol=crlf
+*.gitignore text eol=lf
+
+# File nhi phan - khong doi dong nhat
+*.wim       binary
+*.sdi       binary
+*.cab       binary
+*.iso       binary
+*.exe       binary
+*.dll       binary
+*.zip       binary
+*.tar.gz    binary
+*.gpg       binary

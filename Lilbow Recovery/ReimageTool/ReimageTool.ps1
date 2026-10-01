@@ -1,4 +1,4 @@
-#Requires -RunAsAdministrator
+﻿#Requires -RunAsAdministrator
 # ==============================================================================
 #  LilbowRecovery.ps1 — Ung dung WPF GUI
 #  Khong can cai them gi. PowerShell 5.1 + WPF co san trong Windows 10/11.
@@ -721,10 +721,10 @@ function Update-Dashboard {
 
     # WinPE
     $rdy = Test-WinPEReady
-    $CWinPEIcon.Text=$if($rdy){"✅"}{"❌"}
-    $CWinPETxt.Text= if($rdy){"Đã cài đặt"}{"Chưa cài đặt"}
-    $CWinPETxt.Foreground=if($rdy){"#3FB950"}{"#FF6B6B"}
-    $BtnGoSetup.Visibility=if($rdy){"Collapsed"}{"Visible"}
+    $CWinPEIcon.Text = if ($rdy) { "✅" } else { "❌" }
+    $CWinPETxt.Text      = if ($rdy) { "Đã cài đặt" } else { "Chưa cài đặt" }
+    $CWinPETxt.Foreground = if ($rdy) { "#3FB950" } else { "#FF6B6B" }
+    $BtnGoSetup.Visibility= if ($rdy) { "Collapsed" } else { "Visible" }
 
     # Storage
     try {
@@ -746,8 +746,9 @@ function Update-Dashboard {
         $allOk= $blOk -and $hibOk
         $CSecIcon.Text=if($allOk){"🛡"}else{"⚠"}
         $CSecTxt.Text=if($allOk){"Tất cả ổn"}else{
-            $issues = @(); if(-not $blOk){"BitLocker bật"} | ForEach-Object { $issues+=$_ }
-            if(-not $hibOk){$issues+="Fast Startup bật"}
+            $issues = @()
+            if (-not $blOk) { $issues += "BitLocker bật" }
+            if (-not $hibOk) { $issues += "Fast Startup bật" }
             $issues -join " • "
         }
         $CSecTxt.Foreground=if($allOk){"#3FB950"}else{"#F0883E"}
@@ -1094,7 +1095,7 @@ $BtnDelete.Add_Click({
 
 # ── SETTINGS LOGIC ────────────────────────────────────────────────────────────
 $BtnApplyDrive.Add_Click({
-    $nl=$CmbDrive.SelectedItem; if($nl){$script:StoreLetter=$nl; Update-Dashboard; Set-Status "Đổi ổ lưu ảnh: $nl:"}
+    $nl=$CmbDrive.SelectedItem; if($nl){$script:StoreLetter=$nl; Update-Dashboard; Set-Status "Đổi ổ lưu ảnh: ${nl}:"}
 })
 $BtnInstWinPE.Add_Click({
     $wimSrc=$null

@@ -1,5 +1,5 @@
-# X:\engine.ps1 — Chay trong WinPE
-# TRANG THAI: Ban v1.1 — tich hop risk-mitigation addendum v0.2
+# X:\engine.ps1 - Chay trong WinPE
+# TRANG THAI: Ban v1.1 - tich hop risk-mitigation addendum v0.2
 # Moi thong bao trong file nay PHAI la tieng Viet KHONG dau
 # (console WinPE co the khong hien thi dau tieng Viet)
 #
@@ -24,7 +24,7 @@ $script:pastPoint    = $false   # True = da qua diem format, khong quay lai duoc
 $script:attempts     = 0
 $log = "X:\engine.log"
 
-# ── Tien ich co ban ──────────────────────────────────────────────────────────
+# -- Tien ich co ban ----------------------------------------------------------
 
 function Norm($s) { ("$s" -replace "[^A-Za-z0-9]", "").ToUpper() }
 
@@ -44,7 +44,7 @@ function Report($s) {
 }
 
 function Finish($status, $msg) {
-    Log "$status — $msg"
+    Log "$status - $msg"
     Report "$status $msg"
     if ($script:base) {
         @{ status=$status; message=$msg
@@ -57,7 +57,7 @@ function Finish($status, $msg) {
     }
 }
 
-# Dung TRUOC diem format — ghi DUNG, dat boot ve Windows cu, reboot
+# Dung TRUOC diem format - ghi DUNG, dat boot ve Windows cu, reboot
 function Stop-Safe($m) {
     Finish "DUNG" $m
     Restore-WindowsBoot
@@ -67,7 +67,7 @@ function Stop-Safe($m) {
     exit 1
 }
 
-# Dung NGUY HIEM (sau format) — vao che do cuu ho, KHONG reboot
+# Dung NGUY HIEM (sau format) - vao che do cuu ho, KHONG reboot
 function Stop-Danger($m) {
     Finish "LOI" $m
     Set-State "failed"
@@ -76,7 +76,7 @@ function Stop-Danger($m) {
     exit 1
 }
 
-# ── May trang thai (S15) ──────────────────────────────────────────────────────
+# -- May trang thai (S15) ------------------------------------------------------
 
 $script:state = "init"
 
@@ -91,13 +91,13 @@ function Set-State($phase) {
     Log "[STATE] $phase (lan thu $($script:attempts))"
 }
 
-# ── Che do cuu ho (S19) ───────────────────────────────────────────────────────
+# -- Che do cuu ho (S19) -------------------------------------------------------
 
 function Enter-RescueMode {
     Log "=== CHE DO CUU HO ==="
     Log "Qua 3 lan thu that bai. WinPE o lai cho lenh tu xa."
     Log "Kiem tra log tai: $log"
-    Log "Co the dung nut nguon tai chỗ de khoi dong lai may."
+    Log "Co the dung nut nguon tai cho de khoi dong lai may."
     # Gui heartbeat va cho lenh
     $waited = 0
     while ($true) {
@@ -121,7 +121,7 @@ function Enter-RescueMode {
     }
 }
 
-# ── Quan ly boot EFI (S16) ────────────────────────────────────────────────────
+# -- Quan ly boot EFI (S16) ----------------------------------------------------
 
 $script:efiLetter  = $null
 $script:bcdStore   = $null
@@ -153,7 +153,7 @@ function Set-WinPE-AsDefault {
     if ($script:base -and (Test-Path "$($script:base)\bootguid.txt")) {
         $winpeGuid = (Get-Content "$($script:base)\bootguid.txt" -Raw).Trim()
     }
-    if (-not $winpeGuid) { Log "Canh bao: Khong co bootguid.txt — bo qua set WinPE default"; return }
+    if (-not $winpeGuid) { Log "Canh bao: Khong co bootguid.txt - bo qua set WinPE default"; return }
     try {
         &bcdedit /store $script:bcdStore /default $winpeGuid 2>&1 | Out-Null
         &bcdedit /store $script:bcdStore /timeout 3            2>&1 | Out-Null
@@ -213,14 +213,14 @@ function Assert-WindowsIsDefault {
                 Log "Canh bao: Mac dinh van la WinPE! Dang sua..."
                 Restore-WindowsBoot
             } else {
-                Log "Xac nhan: Mac dinh la Windows ($cur) — dung (S16)"
+                Log "Xac nhan: Mac dinh la Windows ($cur) - dung (S16)"
             }
         }
     } catch { Log "Canh bao: Khong kiem tra duoc mac dinh: $_" }
     return $true
 }
 
-# ── Tien ich phan vung ────────────────────────────────────────────────────────
+# -- Tien ich phan vung --------------------------------------------------------
 
 function Ensure-Letter($p) {
     if (-not $p.DriveLetter) {
@@ -247,7 +247,7 @@ function Find-Store {
     return $null
 }
 
-# ── Kiem tra suc khoe dia (S20) ───────────────────────────────────────────────
+# -- Kiem tra suc khoe dia (S20) -----------------------------------------------
 
 function Assert-DiskHealth($diskNum) {
     try {
@@ -256,15 +256,15 @@ function Assert-DiskHealth($diskNum) {
             # Thu qua Get-Disk
             $d = Get-Disk -Number $diskNum -EA SilentlyContinue
             if ($d -and $d.HealthStatus -ne "Healthy") {
-                Stop-Safe "Dia Disk$diskNum khong Healthy ($($d.HealthStatus)) — S20"
+                Stop-Safe "Dia Disk$diskNum khong Healthy ($($d.HealthStatus)) - S20"
             }
-            Log "Khong kiem tra duoc PhysicalDisk — bo qua kiem tra suc khoe"
+            Log "Khong kiem tra duoc PhysicalDisk - bo qua kiem tra suc khoe"
             return
         }
         if ($pd.HealthStatus -ne "Healthy") {
-            Stop-Safe "Dia $($pd.FriendlyName) khong Healthy ($($pd.HealthStatus)) — S20"
+            Stop-Safe "Dia $($pd.FriendlyName) khong Healthy ($($pd.HealthStatus)) - S20"
         }
-        Log "Dia OK: $($pd.FriendlyName) — $($pd.HealthStatus)"
+        Log "Dia OK: $($pd.FriendlyName) - $($pd.HealthStatus)"
     } catch { Log "Canh bao: Khong kiem tra duoc suc khoe dia: $_" }
 }
 
@@ -273,7 +273,7 @@ function Assert-Power {
         $bat = Get-WmiObject Win32_Battery -EA SilentlyContinue
         if ($bat) {
             if ($bat.BatteryStatus -eq 1 -and $bat.EstimatedChargeRemaining -lt 50) {
-                Stop-Safe "May xach tay: pin $($bat.EstimatedChargeRemaining)% < 50% va khong cam dien — S20"
+                Stop-Safe "May xach tay: pin $($bat.EstimatedChargeRemaining)% < 50% va khong cam dien - S20"
             }
             Log "Nguon dien: Pin $($bat.EstimatedChargeRemaining)% Status=$($bat.BatteryStatus)"
         } else {
@@ -282,7 +282,7 @@ function Assert-Power {
     } catch { Log "Canh bao: Khong kiem tra duoc nguon dien: $_" }
 }
 
-# ── Snapshot phan vung (S17) ──────────────────────────────────────────────────
+# -- Snapshot phan vung (S17) --------------------------------------------------
 
 function Save-PartitionSnapshot {
     if (-not $script:base) { return }
@@ -294,7 +294,7 @@ function Save-PartitionSnapshot {
 function Assert-OtherPartitionsIntact($osGuid) {
     if (-not $script:base) { return }
     $snapFile = "$($script:base)\partitions-before.json"
-    if (-not (Test-Path $snapFile)) { Log "Canh bao: Khong co partitions-before.json — bo qua kiem tra S17"; return }
+    if (-not (Test-Path $snapFile)) { Log "Canh bao: Khong co partitions-before.json - bo qua kiem tra S17"; return }
     try {
         $before = Get-Content $snapFile -Raw -Encoding UTF8 | ConvertFrom-Json
         $after  = @(Get-Partition | Select-Object DiskNumber, PartitionNumber, Guid, Offset, Size)
@@ -319,7 +319,7 @@ function Assert-OtherPartitionsIntact($osGuid) {
     }
 }
 
-# ── Selftest (M4a / Lop 1) ────────────────────────────────────────────────────
+# -- Selftest (M4a / Lop 1) ----------------------------------------------------
 
 function Run-Selftest {
     Log "=== BAT DAU SELFTEST ==="
@@ -348,7 +348,7 @@ function Run-Selftest {
     if ($base) {
         $result.store_found = $true
         Log "  O luu anh: $base"
-        # Doc thu vài MB dau cua ảnh WIM dau tien
+        # Doc thu vai MB dau cua anh WIM dau tien
         $wims = @(Get-ChildItem "$base\images\*.wim" -EA SilentlyContinue | Select-Object -First 1)
         if ($wims.Count -gt 0) {
             try {
@@ -373,7 +373,7 @@ function Run-Selftest {
             Log "  Phan vung OS (GUID $($req.os_partition_guid)): $(if($result.os_partition_found){'Tim thay'}else{'KHONG tim thay'})"
         } catch { Log "  Canh bao: Khong doc selftest-request.json: $_" }
     } else {
-        Log "  Khong co selftest-request.json — bo qua kiem tra phan vung OS"
+        Log "  Khong co selftest-request.json - bo qua kiem tra phan vung OS"
         $result.os_partition_found = $true  # Khong yeu cau
     }
 
@@ -415,18 +415,18 @@ function Run-Selftest {
     exit 0
 }
 
-# ── Kiem tra selftest-ok.json (S14) ──────────────────────────────────────────
+# -- Kiem tra selftest-ok.json (S14) ------------------------------------------
 
 function Assert-SelftestValid {
     $sf = "$($script:base)\selftest-ok.json"
-    if (-not (Test-Path $sf)) { Stop-Safe "Chua chay selftest — restore bi tu choi (S14)" }
+    if (-not (Test-Path $sf)) { Stop-Safe "Chua chay selftest - restore bi tu choi (S14)" }
     try {
         $st = Get-Content $sf -Raw -Encoding UTF8 | ConvertFrom-Json
-        if ($st.status -ne "OK") { Stop-Safe "Selftest that bai ($($st.status)) — restore bi tu choi (S14)" }
+        if ($st.status -ne "OK") { Stop-Safe "Selftest that bai ($($st.status)) - restore bi tu choi (S14)" }
         # Kiem tra thoi han (7 ngay)
         $stTime = [datetime]$st.time
         if ((Get-Date) - $stTime -gt [TimeSpan]::FromDays(7)) {
-            Stop-Safe "Selftest da qua 7 ngay — chay lai selftest truoc (S14)"
+            Stop-Safe "Selftest da qua 7 ngay - chay lai selftest truoc (S14)"
         }
         # Kiem tra model
         try {
@@ -435,19 +435,19 @@ function Assert-SelftestValid {
             $bios  = Get-WmiObject Win32_BIOS -EA SilentlyContinue
             $curB  = $bios.SMBIOSBIOSVersion
             if ($st.model -and $st.model -ne $curM) {
-                Stop-Safe "Model may thay doi ($($st.model) -> $curM) — S14"
+                Stop-Safe "Model may thay doi ($($st.model) -> $curM) - S14"
             }
             if ($st.bios_version -and $st.bios_version -ne $curB) {
-                Stop-Safe "BIOS thay doi ($($st.bios_version) -> $curB) — S14"
+                Stop-Safe "BIOS thay doi ($($st.bios_version) -> $curB) - S14"
             }
-        } catch { Log "Canh bao: Khong kiem tra duoc model/BIOS — cho qua (S14)" }
-        Log "Selftest hop le: $($st.time) — $($st.model) (S14)"
+        } catch { Log "Canh bao: Khong kiem tra duoc model/BIOS - cho qua (S14)" }
+        Log "Selftest hop le: $($st.time) - $($st.model) (S14)"
     } catch {
         Stop-Safe "Khong doc duoc selftest-ok.json: $_ (S14)"
     }
 }
 
-# ── Kiem tra job (S13) ────────────────────────────────────────────────────────
+# -- Kiem tra job (S13) --------------------------------------------------------
 
 function Assert-JobValid($job) {
     # job_id bat buoc
@@ -457,19 +457,19 @@ function Assert-JobValid($job) {
         try {
             $exp = [datetime]$job.expires_at
             if ((Get-Date) -gt $exp) { Stop-Safe "Job het han luc $($job.expires_at) (S13)" }
-            Log "Job het han: $($job.expires_at) — con han (S13)"
-        } catch { Log "Canh bao: Khong parse duoc expires_at — bo qua" }
+            Log "Job het han: $($job.expires_at) - con han (S13)"
+        } catch { Log "Canh bao: Khong parse duoc expires_at - bo qua" }
     } else {
-        Log "Canh bao: Job khong co expires_at — nen them (S13)"
+        Log "Canh bao: Job khong co expires_at - nen them (S13)"
     }
 }
 
 # Kiem tra token tren phan vung OS (S13 - chi dung TRUOC format)
 function Assert-TokenOnPartition($osDriveLetter, $job) {
-    if (-not $job.token) { Log "Canh bao: Job khong co token — bo qua kiem tra token (S13)"; return }
+    if (-not $job.token) { Log "Canh bao: Job khong co token - bo qua kiem tra token (S13)"; return }
     $tokPath = "$osDriveLetter\ProgramData\LilbowRecovery\token.txt"
     if (-not (Test-Path $tokPath)) {
-        Stop-Safe "Khong tim thay token.txt tren $osDriveLetter — S13"
+        Stop-Safe "Khong tim thay token.txt tren $osDriveLetter - S13"
     }
     $tok = (Get-Content $tokPath -Raw -EA SilentlyContinue).Trim()
     if ($tok -ne $job.token) {
@@ -480,24 +480,24 @@ function Assert-TokenOnPartition($osDriveLetter, $job) {
 
 # Kiem tra offset phan vung (S13)
 function Assert-OffsetMatch($partition, $job) {
-    if (-not $job.os_offset) { Log "Canh bao: Job khong co os_offset — bo qua (S13)"; return }
+    if (-not $job.os_offset) { Log "Canh bao: Job khong co os_offset - bo qua (S13)"; return }
     if ([int64]$partition.Offset -ne [int64]$job.os_offset) {
         Stop-Safe "Offset phan vung khong khop: $([int64]$partition.Offset) != $([int64]$job.os_offset) (S13)"
     }
     Log "Offset phan vung khop: $([int64]$partition.Offset) (S13)"
 }
 
-# ── Kiem tra anh da xac minh (S18) ───────────────────────────────────────────
+# -- Kiem tra anh da xac minh (S18) -------------------------------------------
 
 function Assert-ImageVerified($imagePath) {
     $metaPath = "$imagePath.meta.json"
     if (-not (Test-Path $metaPath)) {
-        Stop-Safe "Anh '$imagePath' chua co meta.json — S18. Chay xac minh anh truoc."
+        Stop-Safe "Anh '$imagePath' chua co meta.json - S18. Chay xac minh anh truoc."
     }
     try {
         $meta = Get-Content $metaPath -Raw -Encoding UTF8 | ConvertFrom-Json
         if ($meta.verified -ne $true) {
-            Stop-Safe "Anh '$imagePath' chua duoc xac minh (verified=$($meta.verified)) — S18"
+            Stop-Safe "Anh '$imagePath' chua duoc xac minh (verified=$($meta.verified)) - S18"
         }
         Log "Anh da xac minh: $($meta.source_host) / Build $($meta.windows_build) (S18)"
     } catch { Stop-Safe "Khong doc duoc meta.json: $_ (S18)" }
@@ -531,7 +531,7 @@ function Verify-Image($imagePath) {
             verified      = $verif
         }
         $meta | ConvertTo-Json | Set-Content -LiteralPath "$imagePath.meta.json" -Encoding UTF8
-        Log "  Ghi meta.json — verified=$verif"
+        Log "  Ghi meta.json - verified=$verif"
     } catch {
         Log "Canh bao: Loi khi xac minh anh: $_"
     } finally {
@@ -541,15 +541,15 @@ function Verify-Image($imagePath) {
     return $verif
 }
 
-# ── Nap driver theo model (M5a / Lop 5 muc 7.2) ──────────────────────────────
+# -- Nap driver theo model (M5a / Lop 5 muc 7.2) ------------------------------
 
 function Inject-Drivers($windowsLetter) {
     $model = ""
     try { $cs = Get-WmiObject Win32_ComputerSystem -EA SilentlyContinue; $model = $cs.Model.Trim() } catch {}
-    if (-not $model) { Log "Canh bao: Khong doc duoc model may — bo qua inject driver"; return }
+    if (-not $model) { Log "Canh bao: Khong doc duoc model may - bo qua inject driver"; return }
     $drvDir = "$($script:base)\drivers\$model"
     if (-not (Test-Path $drvDir)) {
-        Log "Khong co driver cho model '$model' — bo qua (S5a)"
+        Log "Khong co driver cho model '$model' - bo qua (S5a)"
         return
     }
     Log "Nap driver cho model '$model' tu $drvDir..."
@@ -559,7 +559,7 @@ function Inject-Drivers($windowsLetter) {
     } catch { Log "Canh bao: Loi nap driver: $_" }
 }
 
-# ── Kiem tra sau khi bung (M5a / Lop 5 muc 7.1) ──────────────────────────────
+# -- Kiem tra sau khi bung (M5a / Lop 5 muc 7.1) ------------------------------
 
 function Assert-PostRestore($windowsLetter) {
     Log "Kiem tra sau khi bung anh (M5a)..."
@@ -570,11 +570,11 @@ function Assert-PostRestore($windowsLetter) {
     if (-not (Test-Path "$windowsLetter\Windows\System32\config\SYSTEM")) {
         Log "THAT BAI: Khong tim thay config\SYSTEM tren $windowsLetter"; $ok = $false
     } else { Log "  config\SYSTEM: OK" }
-    if (-not $ok) { Stop-Danger "Kiem tra sau khi bung THAT BAI — Windows co the khong boot duoc (M5a)" }
+    if (-not $ok) { Stop-Danger "Kiem tra sau khi bung THAT BAI - Windows co the khong boot duoc (M5a)" }
     Log "Kiem tra sau khi bung: OK"
 }
 
-# ── Tien ich ──────────────────────────────────────────────────────────────────
+# -- Tien ich ------------------------------------------------------------------
 
 function Find-Partition-ByGuid($guid) {
     return Get-Partition | Where-Object { $_.Guid -ieq $guid } | Select-Object -First 1
@@ -592,22 +592,22 @@ function Compute-Sha256($path) {
     return (Get-FileHash -LiteralPath $path -Algorithm SHA256).Hash
 }
 
-# ─────────────────────────────────────────────────────────────────────────────
+# -----------------------------------------------------------------------------
 #  MAIN
-# ─────────────────────────────────────────────────────────────────────────────
+# -----------------------------------------------------------------------------
 
 Log "=== LilbowRecovery engine v1.1 ==="
 Log "  Thoi diem: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')"
 Log "  May: $env:COMPUTERNAME"
 
-# ── Khoi tao BCD store ────────────────────────────────────────────────────────
+# -- Khoi tao BCD store --------------------------------------------------------
 Init-BcdStore
 
-# ── Tim store ─────────────────────────────────────────────────────────────────
+# -- Tim store -----------------------------------------------------------------
 $script:base = Find-Store
 if (-not $script:base) {
     Log "Khong tim thay thu muc LilbowRecovery voi job.json."
-    # Neu WinPE khong co job/state — dat lai mac dinh ve Windows roi reboot
+    # Neu WinPE khong co job/state - dat lai mac dinh ve Windows roi reboot
     Restore-WindowsBoot
     Log "Dat lai boot ve Windows. Reboot sau 10 giay..."
     Start-Sleep 10; wpeutil reboot; exit 0
@@ -615,15 +615,15 @@ if (-not $script:base) {
 Log "Store: $($script:base)"
 New-Item -ItemType Directory -Force "$($script:base)\logs" | Out-Null
 
-# ── Kiem tra selftest action ─────────────────────────────────────────────────
+# -- Kiem tra selftest action -------------------------------------------------
 $selftestReq = "$($script:base)\selftest-request.json"
 if (Test-Path $selftestReq) {
-    Log "Phat hien selftest-request.json — chay selftest..."
+    Log "Phat hien selftest-request.json - chay selftest..."
     Run-Selftest
-    # (Khong tra ve — Run-Selftest reboot may)
+    # (Khong tra ve - Run-Selftest reboot may)
 }
 
-# ── Kiem tra state.json (resume sau mat dien) (S15) ──────────────────────────
+# -- Kiem tra state.json (resume sau mat dien) (S15) --------------------------
 $stateFile = "$($script:base)\state.json"
 $isResume  = $false
 if (Test-Path $stateFile) {
@@ -634,23 +634,23 @@ if (Test-Path $stateFile) {
             Log "Phat hien state.json: phase=$($st.phase), lan thu=$($script:attempts) (S15)"
             if ($script:attempts -gt 3) {
                 Set-State "failed"
-                Log "Qua 3 lan thu — vao che do cuu ho (S19)"
+                Log "Qua 3 lan thu - vao che do cuu ho (S19)"
                 Enter-RescueMode
                 exit 1
             }
             $isResume = $true
-            Log "RESUME: lan thu $($script:attempts) — tiep tuc tu buoc format (S15)"
+            Log "RESUME: lan thu $($script:attempts) - tiep tuc tu buoc format (S15)"
         } elseif ($st.phase -eq "done") {
             Log "State = done. Khoi dong chuan."
             $isResume = $false
         } elseif ($st.phase -eq "failed") {
-            Log "State = failed — vao che do cuu ho (S19)"
+            Log "State = failed - vao che do cuu ho (S19)"
             Enter-RescueMode; exit 1
         }
     } catch { Log "Canh bao: Khong doc duoc state.json: $_" }
 }
 
-# ── Doc job.json ──────────────────────────────────────────────────────────────
+# -- Doc job.json --------------------------------------------------------------
 $jobPath = "$($script:base)\job.json"
 if (-not (Test-Path $jobPath)) {
     Log "Khong co job.json."
@@ -668,20 +668,20 @@ try {
 
 Log "Doc job: action=$($script:job.action)  job_id=$($script:job.job_id)"
 
-# ── Kiem tra job hop le (S13) ─────────────────────────────────────────────────
+# -- Kiem tra job hop le (S13) -------------------------------------------------
 Set-State "checking"
 Assert-JobValid $script:job
 
-# ── Kiem tra nguon dien va dia (S20) ─────────────────────────────────────────
+# -- Kiem tra nguon dien va dia (S20) -----------------------------------------
 Assert-Power
 
-# ── Tim phan vung luu anh ─────────────────────────────────────────────────────
+# -- Tim phan vung luu anh -----------------------------------------------------
 $storePart = Find-Partition-ByGuid $script:job.store_partition_guid
 if (-not $storePart) { Stop-Safe "Khong tim thay phan vung luu anh (GUID: $($script:job.store_partition_guid))" }
 $storeL = Ensure-Letter $storePart
 if (-not $storeL) { Stop-Safe "Khong gan duoc chu cai cho o luu anh" }
 
-# ── BACKUP ────────────────────────────────────────────────────────────────────
+# -- BACKUP --------------------------------------------------------------------
 if ($script:job.action -eq "backup") {
     Log "=== BACKUP ==="
 
@@ -712,11 +712,11 @@ if ($script:job.action -eq "backup") {
     Set-Content "$imagePath.sha256" $hash -Encoding UTF8
     Log "  SHA256: $hash"
 
-    Log "[3/4] Xac minh anh (mount thu — S18)..."
+    Log "[3/4] Xac minh anh (mount thu - S18)..."
     $verified = Verify-Image $imagePath
 
     Log "[4/4] Hoan tat backup."
-    # Chuyen job vao logs (S8 — chi o trang thai done)
+    # Chuyen job vao logs (S8 - chi o trang thai done)
     Set-State "done"
     Move-Item -LiteralPath $jobPath -Destination "$($script:base)\logs\job-$(Get-Date -Format yyyyMMdd-HHmmss).json" -Force -EA SilentlyContinue
     Remove-Item $stateFile -Force -EA SilentlyContinue
@@ -727,11 +727,11 @@ if ($script:job.action -eq "backup") {
     Start-Sleep 10; wpeutil reboot; exit 0
 }
 
-# ── RESTORE ───────────────────────────────────────────────────────────────────
+# -- RESTORE -------------------------------------------------------------------
 if ($script:job.action -eq "restore") {
     Log "=== RESTORE ==="
 
-    # Kiem tra selftest (S14) — chi cho restore
+    # Kiem tra selftest (S14) - chi cho restore
     Assert-SelftestValid
 
     $imagePath = "$storeL\LilbowRecovery\$($script:job.image)"
@@ -755,18 +755,18 @@ if ($script:job.action -eq "restore") {
     # Gan chu cai cho phan vung OS (de kiem tra token)
     $osL = Ensure-Letter $osPart
 
-    # Kiem tra token (S13) — CHI TRUOC FORMAT
+    # Kiem tra token (S13) - CHI TRUOC FORMAT
     if (-not $isResume -and $osL) {
         Assert-TokenOnPartition $osL $script:job
     } else {
-        Log "Resume mode — bo qua kiem tra token (S13), dung kiem tra muc 2"
+        Log "Resume mode - bo qua kiem tra token (S13), dung kiem tra muc 2"
         # Kiem tra muc 2: GUID, serial, offset, dung luong
         if ([int64]$osPart.Size -ne [int64]$script:job.os_size) {
             Stop-Safe "Dung luong phan vung khong khop khi resume: $([int64]$osPart.Size) != $([int64]$script:job.os_size)"
         }
     }
 
-    # Chup snapshot phan vung (S17) — chi lan dau (khong phai resume)
+    # Chup snapshot phan vung (S17) - chi lan dau (khong phai resume)
     if (-not $isResume) { Save-PartitionSnapshot }
 
     # Tim EFI
@@ -780,7 +780,7 @@ if ($script:job.action -eq "restore") {
     Set-WinPE-AsDefault
     $script:pastPoint = $true   # Sau day la "vung nguy hiem"
 
-    # ── Format phan vung dich ─────────────────────────────────────────────────
+    # -- Format phan vung dich -------------------------------------------------
     Log "[1/5] Format phan vung dich (GUID: $($script:job.os_partition_guid))..."
     Set-State "formatting"
     try {
@@ -795,18 +795,18 @@ if ($script:job.action -eq "restore") {
     $osL = Ensure-Letter $osPart
     if (-not $osL) { Stop-Danger "Khong gan duoc chu cai sau format" }
 
-    # ── Bung anh ─────────────────────────────────────────────────────────────
+    # -- Bung anh -------------------------------------------------------------
     Log "[2/5] DISM /Apply-Image <- $imagePath"
     Set-State "applying"
     &dism.exe /Apply-Image /ImageFile:"$imagePath" /Index:$($script:job.image_index) /ApplyDir:"$osL\" /Verify 2>&1 |
         ForEach-Object { Log "  [DISM] $_" }
     if ($LASTEXITCODE -ne 0) { Stop-Danger "DISM Apply-Image that bai (exitcode $LASTEXITCODE)" }
 
-    # ── Nap driver theo model (M5a) ───────────────────────────────────────────
+    # -- Nap driver theo model (M5a) -------------------------------------------
     Log "[3/5] Nap driver theo model (M5a)..."
     Inject-Drivers $osL
 
-    # ── Dung BCD (S16) ────────────────────────────────────────────────────────
+    # -- Dung BCD (S16) --------------------------------------------------------
     Log "[4/5] Dung boot voi bcdboot..."
     Set-State "boot-config"
     try {
@@ -820,7 +820,7 @@ if ($script:job.action -eq "restore") {
     # Xac nhan mac dinh da la Windows (S16)
     Assert-WindowsIsDefault
 
-    # ── Kiem tra sau khi bung (M5a) ───────────────────────────────────────────
+    # -- Kiem tra sau khi bung (M5a) -------------------------------------------
     Log "[5/5] Kiem tra sau khi bung..."
     Set-State "verifying"
     Assert-PostRestore $osL
@@ -828,7 +828,7 @@ if ($script:job.action -eq "restore") {
     # Kiem tra phan vung ngoai nguyen ven (S17)
     Assert-OtherPartitionsIntact $script:job.os_partition_guid
 
-    # ── Hoan tat ─────────────────────────────────────────────────────────────
+    # -- Hoan tat -------------------------------------------------------------
     Set-State "done"
     # Chuyen job vao logs (S8)
     Move-Item -LiteralPath $jobPath -Destination "$($script:base)\logs\job-$(Get-Date -Format yyyyMMdd-HHmmss).json" -Force -EA SilentlyContinue
@@ -838,6 +838,6 @@ if ($script:job.action -eq "restore") {
     Start-Sleep 10; wpeutil reboot; exit 0
 }
 
-# ── Action khong ro ───────────────────────────────────────────────────────────
+# -- Action khong ro -----------------------------------------------------------
 Log "Action khong xac dinh: '$($script:job.action)'"
 Restore-WindowsBoot; Start-Sleep 10; wpeutil reboot; exit 1
