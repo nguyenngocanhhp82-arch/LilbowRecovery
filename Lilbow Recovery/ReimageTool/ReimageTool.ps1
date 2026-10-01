@@ -870,25 +870,90 @@ $BtnStartBk.Add_Click({
     $msg = "XÁC NHẬN SAO LƯU:`n`n  Phân vùng : $($item.Letter) — '$($item.Label)' ($($item.SizeGB))`n  Lưu tại   : $($script:StoreLetter):\$($script:ReimageDir)\images\$imgName`n  Mức nén   : $compress`n`nMáy sẽ khởi động lại vào WinPE (~10-40 phút)."
     if ([Windows.MessageBox]::Show($msg,"Xác nhận","OKCancel","Question") -ne "OK") { return }
     try {
-        $job = @{action="backup";hostname=$env:COMPUTERNAME;os_partition_guid=$osPart.Guid
-            os_label=if($osVol){$osVol.FileSystemLabel}else{""}; os_size=$osPart.Size
-            disk_serial="$($disk.SerialNumber)".Trim(); store_partition_guid=$stPart.Guid
-            image="$($script:ImagesDir)\$imgName"; image_index=1
-            image_name="$($script:AppName) $env:COMPUTERNAME $(Get-Date -Format 'yyyy-MM-dd') $($item.Label)"
-            compress=$compress}
-        $job | ConvertTo-Json | Set-Content "$(Get-Base)\job.json" -Encoding UTF8
+        # Tao job_id va token (S13)
+        $jobId  = [guid]::NewGuid().ToString()
+        $token  = [guid]::NewGuid().ToString()
+        $expiry = (Get-Date).AddHours(2).ToString("yyyy-MM-ddTHH:mm:ss")
+        # Ghi token vao phan vung OS de engine xac nhan (S13)
+        $tokDir = "$($item.Letter)ProgramData\LilbowRecovery"
+        New-Item -ItemType Directory -Force $tokDir | Out-Null
+        Set-Content "$tokDir\token.txt" $token -Encoding UTF8
+        # Chup bang phan vung + ghi sentinel (S17)
+        $base = Get-Base
+        Get-Partition | Select-Object DiskNumber,PartitionNumber,Guid,Offset,Size,GptType |
+            ConvertTo-Json | Set-Content "$base\partitions-before.json" -Encoding UTF8
+        Set-Content "$base\sentinel.txt" $token -Encoding UTF8
+        $job = @{
+            action            = "backup"
+            job_id            = $jobId
+            token             = $token
+            expires_at        = $expiry
+            hostname          = $env:COMPUTERNAME
+            os_partition_guid = $osPart.Guid
+            os_offset         = $osPart.Offset
+            os_label          = if($osVol){$osVol.FileSystemLabel}else{""}
+            os_size           = $osPart.Size
+            disk_serial       = "$($disk.SerialNumber)".Trim()
+            store_partition_guid = $stPart.Guid
+            image             = "$($script:ImagesDir)\$imgName"
+            image_index       = 1
+            image_name        = "$($script:AppName) $env:COMPUTERNAME $(Get-Date -Format 'yyyy-MM-dd') $($item.Label)"
+            compress          = $compress
+        }
+        $job | ConvertTo-Json | Set-Content "$base\job.json" -Encoding UTF8
         &bcdedit /bootsequence (Get-BootGuid) | Out-Null
-        Log "Backup: $imgName <- $($item.Letter) GUID=$($osPart.Guid)"
+        Log "Backup: $imgName <- $($item.Letter) GUID=$($osPart.Guid) job_id=$jobId"
         [Windows.MessageBox]::Show("Job ghi xong!`nMáy khởi động lại sau 5 giây.","OK","OK","Information")|Out-Null
         Start-Sleep 5; Restart-Computer -Force
     } catch { [Windows.MessageBox]::Show("Lỗi: $_","Lỗi","OK","Error")|Out-Null; Set-Status "Lỗi: $_" }
 })
+
+# ── SELFTEST trigger ──────────────────────────────────────────────────────────
+function Start-Selftest {
+    $stPt = Get-Partition -DriveLetter $script:StoreLetter -EA SilentlyContinue
+    if (-not $stPt) { [Windows.MessageBox]::Show("Không tìm thấy ổ lưu ảnh $($script:StoreLetter):","Lỗi","OK","Error")|Out-Null; return }
+    $osPart = Get-Partition | Where-Object { (Test-Path "$($_.DriveLetter):\Windows\System32") } | Select-Object -First 1
+    if (-not $osPart) { [Windows.MessageBox]::Show("Không tìm thấy phân vùng Windows.","Lỗi","OK","Error")|Out-Null; return }
+    $base = Get-Base
+    # Ghi selftest-request.json
+    @{ os_partition_guid=$osPart.Guid; hostname=$env:COMPUTERNAME
+       requested_at=(Get-Date -Format "yyyy-MM-ddTHH:mm:ss") } |
+        ConvertTo-Json | Set-Content "$base\selftest-request.json" -Encoding UTF8
+    &bcdedit /bootsequence (Get-BootGuid) | Out-Null
+    Log "Selftest: yeu cau gui, reboot sau 5 giay"
+    [Windows.MessageBox]::Show("Máy sẽ khởi động vào WinPE để kiểm tra (~3-5 phút), rồi tự về Windows.`nKết quả xem trong Dashboard sau khi về Windows.","Selftest","OK","Information")|Out-Null
+    Start-Sleep 5; Restart-Computer -Force
+}
+
+# Kiem tra selftest-ok.json co hop le khong (S14) — dung trong UI
+function Test-SelftestValid {
+    $sf = "$(Get-Base)\selftest-ok.json"
+    if (-not (Test-Path $sf)) { return $false }
+    try {
+        $st = Get-Content $sf -Raw -Encoding UTF8 | ConvertFrom-Json
+        if ($st.status -ne "OK") { return $false }
+        if ((Get-Date) - [datetime]$st.time -gt [TimeSpan]::FromDays(7)) { return $false }
+        return $true
+    } catch { return $false }
+}
 
 # ── RESTORE LOGIC ─────────────────────────────────────────────────────────────
 $BtnStartRst.Add_Click({
     $selImg = $GridImgList.SelectedItem; $selPt = $GridRstParts.SelectedItem
     if (-not $selImg) { [Windows.MessageBox]::Show("Chọn ảnh backup trước.","","OK","Warning")|Out-Null; return }
     if (-not $selPt)  { [Windows.MessageBox]::Show("Chọn phân vùng đích trước.","","OK","Warning")|Out-Null; return }
+
+    # Kiem tra meta.json (S18)
+    $metaPath = "$($selImg.FullPath).meta.json"
+    if (Test-Path $metaPath) {
+        $meta = Get-Content $metaPath -Raw | ConvertFrom-Json -EA SilentlyContinue
+        if ($meta -and $meta.verified -eq $false) {
+            [Windows.MessageBox]::Show("Ảnh '$($selImg.Name)' chưa được xác minh (verified=false).`nKhông thể dùng để restore — S18.","Ảnh chưa xác minh","OK","Error")|Out-Null
+            return
+        }
+    }
+
+    # Kiem tra SHA256
     if (-not (Test-Path "$($selImg.FullPath).sha256")) {
         [Windows.MessageBox]::Show("Thiếu file .sha256.","Thiếu hash","OK","Error")|Out-Null; return
     }
@@ -899,19 +964,55 @@ $BtnStartRst.Add_Click({
         [Windows.MessageBox]::Show("File ảnh bị hỏng! SHA256 không khớp.","Ảnh hỏng","OK","Error")|Out-Null
         Set-Status "SHA256 lỗi"; return
     }
+
+    # Kiem tra selftest (S14)
+    if (-not (Test-SelftestValid)) {
+        $ans = [Windows.MessageBox]::Show(
+            "⚠ Chưa có kết quả selftest hợp lệ (S14).`n`nRestore có thể thất bại nếu WinPE không boot được máy này.`n`nBạn có muốn chạy Selftest trước không?",
+            "Cần Selftest","YesNo","Warning")
+        if ($ans -eq "Yes") { Start-Selftest; return }
+        # Cho phep bỏ qua nhưng cảnh báo rõ
+        if ([Windows.MessageBox]::Show("Tiếp tục mà KHÔNG có selftest? Rủi ro cao nếu máy ở xa.","Xác nhận bỏ qua","OKCancel","Warning") -ne "OK") { return }
+    }
+
     $item=$selPt.OrigItem; $dstPt=$item.Partition; $dstDsk=Get-Disk -Number $dstPt.DiskNumber
     $dstVol=Get-Volume -DriveLetter $item.Letter.TrimEnd(":") -EA SilentlyContinue
     $stPt=Get-Partition -DriveLetter $script:StoreLetter
     $warn="⚠ CẢNH BÁO — THAO TÁC KHÔNG THỂ HOÀN TÁC!`n`nSẼ FORMAT:`n  Ổ: $($item.Letter)  Nhãn: $($item.Label)  Disk$($item.DiskNum)  $($item.SizeGB)`n`nẢnh: $($selImg.Name)`nỔ $($script:StoreLetter): KHÔNG bị ảnh hưởng.`n`nNhấn OK để xác nhận."
     if ([Windows.MessageBox]::Show($warn,"⚠ XÁC NHẬN","OKCancel","Warning") -ne "OK") { return }
     try {
-        $job = @{action="restore";hostname=$env:COMPUTERNAME;os_partition_guid=$dstPt.Guid
-            os_label=if($dstVol){$dstVol.FileSystemLabel}else{""}; os_size=$dstPt.Size
-            disk_serial="$($dstDsk.SerialNumber)".Trim(); store_partition_guid=$stPt.Guid
-            image="$($script:ImagesDir)\$($selImg.Name)"; image_index=1; image_name=""; compress="fast"}
-        $job | ConvertTo-Json | Set-Content "$(Get-Base)\job.json" -Encoding UTF8
+        # Tao job_id + token + expiry (S13)
+        $jobId  = [guid]::NewGuid().ToString()
+        $token  = [guid]::NewGuid().ToString()
+        $expiry = (Get-Date).AddHours(2).ToString("yyyy-MM-ddTHH:mm:ss")
+        # Ghi token vao phan vung dich (S13)
+        $dstLetter = $item.Letter
+        $tokDir = "${dstLetter}ProgramData\LilbowRecovery"
+        New-Item -ItemType Directory -Force $tokDir -EA SilentlyContinue | Out-Null
+        Set-Content "$tokDir\token.txt" $token -Encoding UTF8
+        # Chup bang phan vung + ghi sentinel (S17)
+        $base = Get-Base
+        Get-Partition | Select-Object DiskNumber,PartitionNumber,Guid,Offset,Size,GptType |
+            ConvertTo-Json | Set-Content "$base\partitions-before.json" -Encoding UTF8
+        Set-Content "$base\sentinel.txt" $token -Encoding UTF8
+        $job = @{
+            action            = "restore"
+            job_id            = $jobId
+            token             = $token
+            expires_at        = $expiry
+            hostname          = $env:COMPUTERNAME
+            os_partition_guid = $dstPt.Guid
+            os_offset         = $dstPt.Offset
+            os_label          = if($dstVol){$dstVol.FileSystemLabel}else{""}
+            os_size           = $dstPt.Size
+            disk_serial       = "$($dstDsk.SerialNumber)".Trim()
+            store_partition_guid = $stPt.Guid
+            image             = "$($script:ImagesDir)\$($selImg.Name)"
+            image_index       = 1; image_name=""; compress="fast"
+        }
+        $job | ConvertTo-Json | Set-Content "$base\job.json" -Encoding UTF8
         &bcdedit /bootsequence (Get-BootGuid) | Out-Null
-        Log "Restore: $($selImg.Name) -> $($item.Letter) GUID=$($dstPt.Guid)"
+        Log "Restore: $($selImg.Name) -> $($item.Letter) GUID=$($dstPt.Guid) job_id=$jobId"
         [Windows.MessageBox]::Show("Job ghi xong!`nMáy khởi động lại sau 5 giây.","OK","OK","Information")|Out-Null
         Start-Sleep 5; Restart-Computer -Force
     } catch { [Windows.MessageBox]::Show("Lỗi: $_","Lỗi","OK","Error")|Out-Null; Set-Status "Lỗi: $_" }
