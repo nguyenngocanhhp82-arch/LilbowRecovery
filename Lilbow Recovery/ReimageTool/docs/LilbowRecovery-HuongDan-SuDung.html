@@ -95,7 +95,7 @@ footer { text-align:center; color:var(--muted); font-size:13px; padding:40px 0 2
 <div class="hero">
   <h1>🛡 LilbowRecovery</h1>
   <p>Sao lưu &amp; khôi phục Windows tự động — an toàn, nhanh chóng, hoạt động ngoại tuyến sau lần đầu cài đặt.</p>
-  <div class="badge">Phiên bản v1.0 · Windows 10/11 x64 UEFI/GPT · WIM + DISM · 7 lớp bảo vệ</div>
+  <div class="badge">Phiên bản v1.2 · Windows 10/11 x64 UEFI/GPT · WIM + DISM · 8 lớp bảo vệ</div>
 </div>
 
 <!-- ══════════════════════════════════════════════════════════ TOC -->
@@ -109,7 +109,7 @@ footer { text-align:center; color:var(--muted); font-size:13px; padding:40px 0 2
     <li><a href="#backup">Sao lưu (Backup)</a></li>
     <li><a href="#restore">Khôi phục (Restore)</a></li>
     <li><a href="#images">Quản lý ảnh</a></li>
-    <li><a href="#safety">7 lớp bảo vệ (v1.0)</a></li>
+    <li><a href="#safety">8 lớp bảo vệ (v1.2)</a></li>
     <li><a href="#faq">Câu hỏi thường gặp</a></li>
     <li><a href="#build">Dành cho người phát triển — build WinPE</a></li>
   </ol>
@@ -123,7 +123,7 @@ footer { text-align:center; color:var(--muted); font-size:13px; padding:40px 0 2
 <table>
   <tr><th>Thành phần</th><th>Chạy khi nào</th><th>Chức năng</th></tr>
   <tr><td><strong>ReimageTool.ps1</strong><br><small>WPF GUI</small></td><td>Trong Windows thường ngày</td><td>Tạo job, chọn phân vùng, selftest, quản lý ảnh, bảo mật</td></tr>
-  <tr><td><strong>engine.ps1</strong><br><small>WinPE Engine</small></td><td>Trong WinPE (sau reboot)</td><td>Thực hiện DISM backup/restore với 7 lớp kiểm tra an toàn</td></tr>
+  <tr><td><strong>engine.ps1</strong><br><small>WinPE Engine</small></td><td>Trong WinPE (sau reboot)</td><td>Thực hiện DISM backup/restore với 8 lớp kiểm tra an toàn</td></tr>
 </table>
 
 <h3 class="sub">Luồng hoạt động</h3>
@@ -134,7 +134,7 @@ footer { text-align:center; color:var(--muted); font-size:13px; padding:40px 0 2
   <div class="flow-arr">→</div>
   <div class="flow-box">③ Máy reboot vào WinPE</div>
   <div class="flow-arr">→</div>
-  <div class="flow-box">④ engine.ps1 xác minh 7 lớp</div>
+  <div class="flow-box">④ engine.ps1 xác minh 8 lớp</div>
   <div class="flow-arr">→</div>
   <div class="flow-box">⑤ DISM capture/apply</div>
   <div class="flow-arr">→</div>
@@ -203,7 +203,7 @@ footer { text-align:center; color:var(--muted); font-size:13px; padding:40px 0 2
 </div>
 
 <!-- ══════════════════════════════════════════════════════════ SELFTEST -->
-<h2 class="sec" id="selftest">4. Selftest — kiểm tra khả năng khởi động <span class="badge-new">Mới v1.0</span></h2>
+<h2 class="sec" id="selftest">4. Selftest — kiểm tra khả năng khởi động <span class="badge-new">Mới v1.2</span></h2>
 
 <div class="alert alert-info">
   <div class="alert-icon">ℹ️</div>
@@ -339,7 +339,7 @@ footer { text-align:center; color:var(--muted); font-size:13px; padding:40px 0 2
       <div class="step-title">WinPE thực hiện restore (~15–60 phút)</div>
       <p>Engine thực hiện theo thứ tự:</p>
       <ol style="margin-top:8px;padding-left:20px;font-size:14px">
-        <li>Xác minh 7 lớp bảo vệ (token, offset, selftest, ảnh đã verify...)</li>
+        <li>Xác minh 8 lớp bảo vệ (token, offset, ổ đĩa, phân vùng EFI...)</li>
         <li>Đặt WinPE làm boot mặc định (bảo vệ nếu mất điện)</li>
         <li>Format phân vùng đích</li>
         <li>DISM apply-image</li>
@@ -386,45 +386,45 @@ footer { text-align:center; color:var(--muted); font-size:13px; padding:40px 0 2
 </div>
 
 <!-- ══════════════════════════════════════════════════════════ SAFETY -->
-<h2 class="sec" id="safety">8. 7 lớp bảo vệ (v1.0)</h2>
+<h2 class="sec" id="safety">8. 8 lớp bảo vệ (v1.2)</h2>
 
 <p>Được tích hợp vào <code>engine.ps1</code> để giảm tối đa rủi ro khi restore từ xa:</p>
 
 <div class="layers">
   <div class="layer">
-    <div class="layer-id">S14 · Lớp 1</div>
-    <h4>🔍 Selftest boot</h4>
-    <p>WinPE boot thử không phá hủy gì, ghi kết quả. Restore bị từ chối nếu selftest chưa qua hoặc quá 7 ngày.</p>
+    <div class="layer-id">B1 · Lớp 1</div>
+    <h4>🔄 Resume an toàn</h4>
+    <p>Đọc state trước khi ghi, bảo vệ biến pastPoint, đảm bảo nếu mất điện lúc đang format máy vẫn biết và tiếp tục.</p>
   </div>
   <div class="layer">
-    <div class="layer-id">S13 · Lớp 2</div>
-    <h4>🔑 Token + Offset + Expiry</h4>
-    <p>Token ngẫu nhiên ghi vào phân vùng đích. Engine chỉ format phân vùng chứa đúng token và đúng offset. Job hết hạn sau 2 giờ.</p>
+    <div class="layer-id">B2 · Lớp 2</div>
+    <h4>🔍 Assert-TargetSafe</h4>
+    <p>Kiểm tra phân vùng nghiêm ngặt, loại trừ ổ USB, so khớp GUID và Offset với cấu hình để tránh xóa nhầm.</p>
   </div>
   <div class="layer">
-    <div class="layer-id">S15/S16 · Lớp 3</div>
-    <h4>🔄 Tự hồi phục sau mất điện</h4>
-    <p>Ghi state.json trước mỗi bước. Mất điện → bật lại → WinPE tiếp tục từ bước format. Tối đa 3 lần.</p>
+    <div class="layer-id">B3 · Lớp 3</div>
+    <h4>💿 Tìm EFI chuẩn xác</h4>
+    <p>Thuật toán thông minh tự tìm và gán phân vùng EFI nằm trên đúng đĩa vật lý chứa Windows.</p>
   </div>
   <div class="layer">
-    <div class="layer-id">S18 · Lớp 4</div>
-    <h4>✅ Ảnh đã xác minh</h4>
-    <p>Sau backup, DISM mount thử ảnh để kiểm tra winload.efi và config\SYSTEM. Chỉ restore ảnh có verified=true.</p>
+    <div class="layer-id">B4 · Lớp 4</div>
+    <h4>🔒 WinPE Default Boot</h4>
+    <p>Xác nhận WinPE đang là default boot menu trước khi thực hiện bước nguy hiểm là format Windows.</p>
   </div>
   <div class="layer">
-    <div class="layer-id">S17 · Lớp 5</div>
-    <h4>📸 Snapshot phân vùng</h4>
-    <p>Chụp bảng phân vùng trước khi chạy. Sau khi bung, kiểm tra tất cả phân vùng khác không bị thay đổi. Sentinel.txt bảo vệ ổ lưu ảnh.</p>
+    <div class="layer-id">B5/B8 · Lớp 5 & 8</div>
+    <h4>⚙ Cơ chế BCD an toàn</h4>
+    <p>Backup BCD trước khi chạy, so sánh displayorder, Assert-WindowsIsDefault để đảm bảo Windows boot lên sau khi bung.</p>
   </div>
   <div class="layer">
-    <div class="layer-id">M5a · Lớp 6</div>
-    <h4>🔧 Kiểm tra sau khi bung + Driver</h4>
-    <p>Xác nhận winload.efi và SYSTEM hive tồn tại. Inject driver theo model máy trước khi reboot.</p>
+    <div class="layer-id">B6 · Lớp 6</div>
+    <h4>🛡 Sao lưu an toàn vào _tmp</h4>
+    <p>Ghi file vào <code>_tmp</code> trước, xóa ngay file partial khi có lỗi để tránh WIM bị lỗi dung lượng ảo.</p>
   </div>
   <div class="layer">
-    <div class="layer-id">S20 · Lớp 7</div>
-    <h4>💊 Kiểm tra đĩa + nguồn điện</h4>
-    <p>Từ chối nếu đĩa không Healthy. Máy xách tay phải cắm điện và pin &gt; 50%.</p>
+    <div class="layer-id">B7 · Lớp 7</div>
+    <h4>💊 Kiểm tra sức khỏe đĩa</h4>
+    <p>Kiểm tra trạng thái đĩa (Disk Health) dựa trên DeviceId (Get-PnpDevice) chính xác để tránh restore lên đĩa sắp hỏng.</p>
   </div>
 </div>
 
@@ -476,11 +476,11 @@ build-winpe.cmd</code></pre>
 <p>Đợi ~5–10 phút. Kết quả: <code>winpe\dist\boot.wim</code> + <code>boot.sdi</code>.</p>
 
 <h3 class="sub">Bước 3 — Đăng lên GitHub Releases</h3>
-<p>Tạo Release <code>v1.0.0</code> tại <a href="https://github.com/nguyenngocanhhp82-arch/LilbowRecovery/releases/new" target="_blank">GitHub</a> → upload <code>boot.wim</code> và <code>boot.sdi</code>.</p>
+<p>Tạo Release <code>v1.2.0</code> tại <a href="https://github.com/nguyenngocanhhp82-arch/LilbowRecovery/releases/new" target="_blank">GitHub</a> → upload <code>boot.wim</code> và <code>boot.sdi</code>.</p>
 
 <h3 class="sub">Bước 4 — Build single-file</h3>
 <pre><code># Trên Ubuntu:
-bash tools/build-singlefile.sh v1.0.0
+bash tools/build-singlefile.sh v1.2.0
 # → dist/LilbowRecovery.bat (146 KB) — file phân phối cho người dùng</code></pre>
 
 <h3 class="sub">Cấu trúc thư mục lưu ảnh trên máy đích</h3>
@@ -500,7 +500,7 @@ bash tools/build-singlefile.sh v1.0.0
   └── logs\                  Log engine.ps1</code></pre>
 
 <footer>
-  <p>LilbowRecovery v1.0 · <a href="https://github.com/nguyenngocanhhp82-arch/LilbowRecovery">github.com/nguyenngocanhhp82-arch/LilbowRecovery</a></p>
+  <p>LilbowRecovery v1.2 · <a href="https://github.com/nguyenngocanhhp82-arch/LilbowRecovery">github.com/nguyenngocanhhp82-arch/LilbowRecovery</a></p>
   <p style="margin-top:8px">Tài liệu cập nhật: 01/10/2026</p>
 </footer>
 
