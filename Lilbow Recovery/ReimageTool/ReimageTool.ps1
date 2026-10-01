@@ -925,7 +925,7 @@ $BtnStartBk.Add_Click({
         $token  = [guid]::NewGuid().ToString()
         $expiry = (Get-Date).AddHours(2).ToString("yyyy-MM-ddTHH:mm:ss")
         # Ghi token vao phan vung OS de engine xac nhan (S13)
-        $tokDir = "$($item.Letter)ProgramData\LilbowRecovery"
+        $tokDir = "$($item.Letter)\ProgramData\LilbowRecovery"
         New-Item -ItemType Directory -Force $tokDir | Out-Null
         Set-Content "$tokDir\token.txt" $token -Encoding UTF8
         # Chup bang phan vung + ghi sentinel (S17)
@@ -1039,7 +1039,7 @@ $BtnStartRst.Add_Click({
         $expiry = (Get-Date).AddHours(2).ToString("yyyy-MM-ddTHH:mm:ss")
         # Ghi token vao phan vung dich (S13)
         $dstLetter = $item.Letter
-        $tokDir = "${dstLetter}ProgramData\LilbowRecovery"
+        $tokDir = "${dstLetter}\ProgramData\LilbowRecovery"
         New-Item -ItemType Directory -Force $tokDir -EA SilentlyContinue | Out-Null
         Set-Content "$tokDir\token.txt" $token -Encoding UTF8
         # Chup bang phan vung + ghi sentinel (S17)
