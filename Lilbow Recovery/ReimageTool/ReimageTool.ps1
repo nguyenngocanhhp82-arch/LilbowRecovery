@@ -78,9 +78,18 @@ function Get-ImageRows {
     @(Get-ChildItem "$(Get-ImgDir)\*.wim" -EA SilentlyContinue | Sort-Object LastWriteTime -Descending |
       ForEach-Object {
           $hasSha = Test-Path "$($_.FullName).sha256"
+          $verified = "?"
+          $metaPath = "$($_.FullName).meta.json"
+          if (Test-Path $metaPath) {
+              try {
+                  $m = Get-Content $metaPath -Raw | ConvertFrom-Json
+                  $verified = if ($m.verified -eq $true) { "✔ OK" } else { "✘ Chưa" }
+              } catch { $verified = "!Ỗn" }
+          } else { $verified = "— Chưa" }
           [PSCustomObject]@{Name=$_.Name; SizeStr=Format-GB $_.Length
               DateStr=$_.LastWriteTime.ToString("yyyy-MM-dd HH:mm")
-              HashStatus=if($hasSha){"✔ OK"}else{"✘ Thiếu"}; FullPath=$_.FullName}
+              HashStatus=if($hasSha){"✔ OK"}else{"✘ Thiếu"}
+              Verified=$verified; FullPath=$_.FullName}
       })
 }
 
@@ -506,8 +515,23 @@ function Fix-SecurityItem($id) {
 
           <!-- ═══════════ RESTORE ═══════════ -->
           <StackPanel x:Name="PageRestore" Visibility="Collapsed" Margin="22,18,22,18">
-            <TextBlock Text="🔄 Khôi phục (Restore)" FontSize="21" FontWeight="Bold" Foreground="#E6EDF3"/>
-            <TextBlock Text="Chọn ảnh và phân vùng đích để khôi phục." FontSize="12" Foreground="#8B949E" Margin="0,4,0,16"/>
+            <DockPanel Margin="0,0,0,6">
+              <TextBlock Text="🔄 Khôi phục (Restore)" FontSize="21" FontWeight="Bold" Foreground="#E6EDF3" VerticalAlignment="Center"/>
+              <Button x:Name="BtnSelftest" HorizontalAlignment="Right" VerticalAlignment="Center"
+                      Content="🔍 Kiểm tra khởi động (Selftest)" Padding="12,6"
+                      Background="#21262D" Foreground="#E6EDF3" BorderBrush="#444C56"
+                      FontSize="12" Cursor="Hand"/>
+            </DockPanel>
+            <Border x:Name="BannerSelftest" CornerRadius="8" Padding="12,9" Margin="0,0,0,14"
+                    Background="#1C1F24" BorderThickness="1" BorderBrush="#D29922">
+              <StackPanel Orientation="Horizontal">
+                <TextBlock x:Name="TxtSelftestIcon" Text="⚠️" FontSize="15" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                <StackPanel>
+                  <TextBlock x:Name="TxtSelftestTitle" Text="Chưa có kết quả selftest" FontSize="13" FontWeight="SemiBold" Foreground="#E6EDF3"/>
+                  <TextBlock x:Name="TxtSelftestDetail" Text="Nhấn 'Kiểm tra khởi động' trước khi restore để đảm bảo an toàn (S14)." FontSize="11" Foreground="#8B949E"/>
+                </StackPanel>
+              </StackPanel>
+            </Border>
             <Border Style="{StaticResource Card}" Margin="0,0,0,10">
               <StackPanel>
                 <TextBlock Text="Chọn ảnh backup" FontSize="13" FontWeight="SemiBold" Foreground="#E6EDF3" Margin="0,0,0,10"/>
@@ -522,6 +546,7 @@ function Fix-SecurityItem($id) {
                     <DataGridTextColumn Header="Kích thước"   Binding="{Binding SizeStr}"    Width="90"/>
                     <DataGridTextColumn Header="Ngày tạo"     Binding="{Binding DateStr}"    Width="130"/>
                     <DataGridTextColumn Header="Hash"         Binding="{Binding HashStatus}" Width="75"/>
+                    <DataGridTextColumn Header="Xác minh"     Binding="{Binding Verified}"   Width="75"/>
                   </DataGrid.Columns>
                 </DataGrid>
               </StackPanel>
@@ -662,6 +687,7 @@ $GridBkParts  = C "GridBkParts";  $TxtBkName = C "TxtBkName"; $CmbCompress = C "
 $BtnStartBk   = C "BtnStartBackup"
 $GridImgList  = C "GridImgList";  $GridRstParts = C "GridRstParts"
 $BtnStartRst  = C "BtnStartRestore"
+$BtnSelftest  = C "BtnSelftest"
 
 # Images
 $GridMgImg = C "GridMgImg"; $BtnImport = C "BtnImport"; $BtnDelete = C "BtnDelete"
@@ -815,6 +841,29 @@ $NavRestore.Add_Click({
     Hl-Nav $NavRestore; Show-Page $PgRst
     $GridImgList.ItemsSource  = Get-ImageRows
     $GridRstParts.ItemsSource = Get-PartRows "target"
+    # Cap nhat selftest banner (S14)
+    $ok = Test-SelftestValid
+    $BtnST = $Win.FindName("BtnSelftest")
+    $banner = $Win.FindName("BannerSelftest")
+    $icon   = $Win.FindName("TxtSelftestIcon")
+    $title  = $Win.FindName("TxtSelftestTitle")
+    $detail = $Win.FindName("TxtSelftestDetail")
+    if ($ok) {
+        if ($banner)  { $banner.BorderBrush = [Windows.Media.Brushes]::DarkGreen }
+        if ($banner)  { $banner.Background  = [Windows.Media.SolidColorBrush]([Windows.Media.Color]::FromRgb(14,40,14)) }
+        if ($icon)    { $icon.Text  = "✅" }
+        if ($title)   { $title.Text = "Selftest đã vượt qua" }
+        try {
+            $sf = Get-Content "$(Get-Base)\selftest-ok.json" -Raw | ConvertFrom-Json
+            if ($detail) { $detail.Text = "Kiểm tra lúc $($sf.time) — $($sf.model) — Restore an toàn." }
+        } catch {}
+    } else {
+        if ($banner)  { $banner.BorderBrush = [Windows.Media.Brushes]::Goldenrod }
+        if ($banner)  { $banner.Background  = [Windows.Media.SolidColorBrush]([Windows.Media.Color]::FromRgb(28,31,36)) }
+        if ($icon)    { $icon.Text  = "⚠️" }
+        if ($title)   { $title.Text = "Chưa có kết quả selftest hợp lệ" }
+        if ($detail)  { $detail.Text = "Nhấn 'Kiểm tra khởi động' trước khi restore (S14)." }
+    }
     Set-Status "Chọn ảnh và phân vùng đích"
 })
 $NavImages.Add_Click({
@@ -905,6 +954,8 @@ $BtnStartBk.Add_Click({
         Log "Backup: $imgName <- $($item.Letter) GUID=$($osPart.Guid) job_id=$jobId"
         [Windows.MessageBox]::Show("Job ghi xong!`nMáy khởi động lại sau 5 giây.","OK","OK","Information")|Out-Null
         Start-Sleep 5; Restart-Computer -Force
+
+$BtnSelftest.Add_Click({ Start-Selftest })
     } catch { [Windows.MessageBox]::Show("Lỗi: $_","Lỗi","OK","Error")|Out-Null; Set-Status "Lỗi: $_" }
 })
 
