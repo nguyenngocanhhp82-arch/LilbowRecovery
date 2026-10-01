@@ -20,7 +20,7 @@ ROOT="$SCRIPT_DIR/.."
 DIST="$ROOT/dist"
 OUT="$DIST/LilbowRecovery.bat"
 
-GITHUB_REPO="lilbownguyen/LilbowRecovery"
+GITHUB_REPO="nguyenngocanhhp82-arch/LilbowRecovery"
 RELEASE_TAG="${1:-v1.0.0}"
 # URL se dung khi tai boot.wim tu GitHub Releases
 BOOT_WIM_URL="https://github.com/${GITHUB_REPO}/releases/download/${RELEASE_TAG}/boot.wim"
