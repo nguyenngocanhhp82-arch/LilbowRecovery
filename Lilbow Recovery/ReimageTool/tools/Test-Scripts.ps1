@@ -1,4 +1,4 @@
-param([string[]]$Files = @("ReimageTool.ps1", "engine.ps1"))
+param([string[]]$Files = @("ReimageTool.ps1", "winpe/engine.ps1"))
 # Kiem tra cu phap + ma hoa + xuong dong cho cac script PowerShell cua LilbowRecovery.
 # Quy tac: engine.ps1 = ASCII thuan + CRLF. ReimageTool.ps1 = UTF-8 CO BOM + CRLF.
 # Chay: pwsh -NoProfile -File tools/Test-Scripts.ps1
